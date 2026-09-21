@@ -1,5 +1,7 @@
 import 'package:speech_to_text/speech_to_text.dart';
 
+import '../../../../core/localization/app_language_tag.dart';
+
 abstract interface class AssistantSpeechRecognizer {
   Future<bool> initialize({
     required void Function(String) onError,
@@ -52,12 +54,11 @@ class DeviceAssistantSpeechRecognizer implements AssistantSpeechRecognizer {
     final generation = ++_generation;
     final locales = await _speech.locales();
     if (generation != _generation) return;
-    final matching = locales.where(
-      (locale) =>
-          locale.localeId.toLowerCase().split(RegExp('[-_]')).first ==
-          languageCode,
+    final localeId = selectAvailableSpeechLocale(
+      locales.map((locale) => locale.localeId),
+      languageCode,
     );
-    if (matching.isEmpty) {
+    if (localeId == null) {
       throw const AssistantSpeechRecognitionException(
         'VOICE_LANGUAGE_UNAVAILABLE',
       );
@@ -69,7 +70,7 @@ class DeviceAssistantSpeechRecognizer implements AssistantSpeechRecognizer {
         }
       },
       listenOptions: SpeechListenOptions(
-        localeId: matching.first.localeId,
+        localeId: localeId,
         listenFor: const Duration(seconds: 30),
         pauseFor: const Duration(seconds: 3),
         partialResults: true,

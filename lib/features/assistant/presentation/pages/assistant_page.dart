@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/localization/app_language_tag.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/bottom_nav_bar.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -95,7 +96,9 @@ class _AssistantPageState extends State<AssistantPage>
     final l10n = AppLocalizations.of(context)!;
     final copy = AssistantCopy.fromL10n(l10n);
     _controller.configure(copy);
-    _controller.languageCode = Localizations.localeOf(context).languageCode;
+    _controller.languageCode = appLanguageTagForLocale(
+      Localizations.localeOf(context),
+    );
     _conversationController.configure(copy);
     _alarmController.configure(TravelAlarmCopy.fromL10n(l10n));
   }

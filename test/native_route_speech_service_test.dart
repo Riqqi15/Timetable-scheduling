@@ -52,4 +52,22 @@ void main() {
       expect(calls[2].method, 'stop');
     },
   );
+
+  test('Mandarin and Arabic use matching Android TTS locales', () async {
+    const service = NativeRouteSpeechService();
+
+    await service.speak('前往雅加达科塔', 'zh-Hans');
+    await service.speak('اذهب إلى محطة جاكرتا كوتا', 'ar');
+
+    expect(calls[0].arguments, {
+      'text': '前往雅加达科塔',
+      'locale': 'zh-CN',
+      'rate': 0.45,
+    });
+    expect(calls[1].arguments, {
+      'text': 'اذهب إلى محطة جاكرتا كوتا',
+      'locale': 'ar-SA',
+      'rate': 0.45,
+    });
+  });
 }

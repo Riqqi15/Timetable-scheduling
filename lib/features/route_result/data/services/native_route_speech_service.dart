@@ -1,4 +1,6 @@
 import 'package:flutter/services.dart';
+
+import '../../../../core/localization/app_language_tag.dart';
 import '../../domain/services/route_speech_service.dart';
 
 class NativeRouteSpeechService implements RouteSpeechService {
@@ -12,7 +14,7 @@ class NativeRouteSpeechService implements RouteSpeechService {
   Future<void> speak(String text, String languageCode) =>
       _channel.invokeMethod<void>('speak', {
         'text': text,
-        'locale': languageCode == 'en' ? 'en-US' : 'id-ID',
+        'locale': speechLocaleForLanguageTag(languageCode),
         'rate': 0.45,
       });
 
