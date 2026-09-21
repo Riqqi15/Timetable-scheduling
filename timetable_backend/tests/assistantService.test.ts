@@ -120,6 +120,17 @@ test('assistant understands destination-first natural route phrasing', () => {
   );
 });
 
+test('assistant extracts direct Mandarin and Arabic route phrases', () => {
+  assert.deepEqual(
+    extractRouteRequest('我想从Bekasi到Jakarta Kota'),
+    { from: 'Bekasi', to: 'Jakarta Kota' },
+  );
+  assert.deepEqual(
+    extractRouteRequest('أريد الذهاب من Bekasi إلى Jakarta Kota'),
+    { from: 'Bekasi', to: 'Jakarta Kota' },
+  );
+});
+
 test('assistant ignores common filler in origin-first route phrasing', () => {
   assert.deepEqual(
     extractRouteRequest('Aku dari Bintaro mau ke Jakarta Kota, naik apa ya?'),
@@ -219,6 +230,26 @@ test('multi-bahasa area clarification supports English', () => {
   assert.match(notFoundId, /belum menemukan rute/i);
   const sameId = buildSameOriginMessage('id');
   assert.match(sameId, /sama/i);
+});
+
+test('assistant prompt enforces Mandarin and Arabic output', () => {
+  assert.match(
+    buildAssistantPrompt('你好', undefined, [], undefined, 'zh-Hans'),
+    /简体中文/,
+  );
+  assert.match(
+    buildAssistantPrompt('مرحبا', undefined, [], undefined, 'ar'),
+    /اللغة العربية/,
+  );
+});
+
+test('deterministic assistant copy follows Mandarin and Arabic', () => {
+  assert.match(buildNoScheduleMessage('Manggarai', 'zh-Hans'), /未找到/);
+  assert.match(buildRouteNotFoundMessage('zh-Hans'), /路线/);
+  assert.match(buildSameOriginMessage('zh-Hans'), /相同/);
+  assert.match(buildNoScheduleMessage('Manggarai', 'ar'), /لم نعثر/);
+  assert.match(buildRouteNotFoundMessage('ar'), /مسار/);
+  assert.match(buildSameOriginMessage('ar'), /نفس/);
 });
 
 test('location-only does not produce route request', () => {
@@ -370,6 +401,36 @@ test('structured reply includes route when planRoute succeeds', async () => {
   }
   RouteService.planRoute = originalPlan;
   process.env.GEMINI_API_KEY = prevKey;
+});
+
+test('deterministic route reply localizes standard steps without Gemini', async () => {
+  const originalPlan = RouteService.planRoute;
+  // @ts-ignore test seam for deterministic route formatting
+  RouteService.planRoute = async () => ({ ...routeFixture });
+  try {
+    const service = new AssistantService();
+    const zh = await service.reply(
+      '从Bekasi到Jakarta Kota',
+      [],
+      'zh-Hans',
+    );
+    assert.match(zh.text, /这是从Bekasi前往Jakarta Kota的路线/);
+    assert.match(zh.text, /在Bekasi上车/);
+    assert.match(zh.text, /40分钟/);
+    assert.match(zh.text, /预计行程/);
+
+    const ar = await service.reply(
+      'أريد الذهاب من Bekasi إلى Jakarta Kota',
+      [],
+      'ar',
+    );
+    assert.match(ar.text, /إليك المسار من Bekasi إلى Jakarta Kota/);
+    assert.match(ar.text, /اركب من Bekasi/);
+    assert.match(ar.text, /40 دقيقة/);
+    assert.match(ar.text, /المدة التقديرية/);
+  } finally {
+    RouteService.planRoute = originalPlan;
+  }
 });
 
 test('session follows destination-first and replacement origin/destination requests', () => {
