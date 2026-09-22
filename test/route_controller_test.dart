@@ -7,6 +7,7 @@ import 'helpers/route_test_data.dart';
 
 class _Repository implements RouteRepository {
   bool fail = false;
+  final failPreferences = <RoutePreference>{};
   final calls = <RoutePreference>[];
 
   @override
@@ -17,7 +18,9 @@ class _Repository implements RouteRepository {
     int passengerCount = 1,
   }) async {
     calls.add(preference);
-    if (fail) throw Exception('offline');
+    if (fail || failPreferences.contains(preference)) {
+      throw Exception('offline');
+    }
     return testRoute;
   }
 }
@@ -49,10 +52,15 @@ void main() {
       await controller.load(from: 'bogor', to: 'tangerang');
       expect(controller.state, RouteViewState.success);
       expect(controller.route?.from, 'Bogor');
-      expect(repository.calls, [RoutePreference.fastest]);
+      expect(repository.calls, [
+        RoutePreference.fastest,
+        RoutePreference.minimumTransfers,
+      ]);
 
       await controller.selectPreference(RoutePreference.minimumTransfers);
-      expect(repository.calls.last, RoutePreference.minimumTransfers);
+      await controller.selectPreference(RoutePreference.accessible);
+      await controller.selectPreference(RoutePreference.fastest);
+      expect(repository.calls, hasLength(2));
 
       repository.fail = true;
       await controller.retry();
@@ -72,7 +80,10 @@ void main() {
 
     await controller.selectPreference(RoutePreference.accessible);
     expect(controller.preference, RoutePreference.accessible);
-    expect(repository.calls, [RoutePreference.fastest]);
+    expect(repository.calls, [
+      RoutePreference.fastest,
+      RoutePreference.minimumTransfers,
+    ]);
 
     await controller.speak('id');
     expect(speech.spoken.single, contains('Bogor menuju Tangerang'));
@@ -80,5 +91,29 @@ void main() {
     await controller.stop();
     expect(speech.pauseCount, 1);
     expect(speech.stopCount, 1);
+  });
+
+  test('failed alternative keeps the available route visible', () async {
+    final repository = _Repository()
+      ..failPreferences.add(RoutePreference.minimumTransfers);
+    final controller = RouteController(repository, _Speech());
+
+    await controller.load(from: 'bogor', to: 'tangerang');
+
+    expect(controller.state, RouteViewState.success);
+    expect(controller.route, isNotNull);
+    expect(controller.preference, RoutePreference.fastest);
+
+    await controller.selectPreference(RoutePreference.minimumTransfers);
+
+    expect(controller.state, RouteViewState.success);
+    expect(controller.route, isNotNull);
+    expect(controller.preference, RoutePreference.fastest);
+    expect(controller.preferenceError, RouteController.connectionError);
+    expect(repository.calls, [
+      RoutePreference.fastest,
+      RoutePreference.minimumTransfers,
+      RoutePreference.minimumTransfers,
+    ]);
   });
 }
