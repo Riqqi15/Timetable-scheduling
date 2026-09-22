@@ -133,17 +133,22 @@ void main() {
     );
   });
 
-  testWidgets('Selected station panel shows next train arrival board', (
+  testWidgets('Selected station never invents next trains without GPS', (
     WidgetTester tester,
   ) async {
     appRouter.go('/?selected=Setiabudi');
     await tester.pumpWidget(const MyApp());
     await tester.pumpAndSettle();
 
-    expect(find.text('Kereta berikutnya dari Setiabudi'), findsOneWidget);
-    expect(find.text('Datang 3 menit lagi'), findsOneWidget);
-    expect(find.text('Perjalanan 5 menit'), findsOneWidget);
-    expect(find.text('Peron 1'), findsOneWidget);
+    expect(find.text('Kereta berikutnya'), findsOneWidget);
+    expect(
+      find.text(
+        'Stasiun belum dapat dipastikan. Dekati stasiun atau coba tombol lokasi.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Datang 3 menit lagi'), findsNothing);
+    expect(find.text('Peron 1'), findsNothing);
   });
 
   testWidgets('Blind Guide switch opens auto-voice camera mode and resets', (
