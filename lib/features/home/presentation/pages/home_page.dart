@@ -382,6 +382,15 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  void _showAreaComingSoon(BuildContext drawerContext) {
+    final message = AppLocalizations.of(drawerContext)!.filterAreaComingSoon;
+    Navigator.pop(drawerContext);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      AppNotice.show(context, message: message);
+    });
+  }
+
   Widget _buildEndDrawer(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Drawer(
@@ -426,12 +435,7 @@ class _HomePageState extends State<HomePage> {
                       l10n.homeAreaCentral,
                       style: TextStyle(color: AppColors.textHint),
                     ),
-                    onTap: () {
-                      AppNotice.show(
-                        context,
-                        message: l10n.filterAreaComingSoon,
-                      );
-                    },
+                    onTap: () => _showAreaComingSoon(context),
                   ),
                   ListTile(
                     contentPadding: const EdgeInsets.only(left: 72, right: 16),
@@ -439,12 +443,7 @@ class _HomePageState extends State<HomePage> {
                       l10n.homeAreaSouth,
                       style: TextStyle(color: AppColors.textHint),
                     ),
-                    onTap: () {
-                      AppNotice.show(
-                        context,
-                        message: l10n.filterAreaComingSoon,
-                      );
-                    },
+                    onTap: () => _showAreaComingSoon(context),
                   ),
                   ListTile(
                     contentPadding: const EdgeInsets.only(left: 72, right: 16),
@@ -452,12 +451,7 @@ class _HomePageState extends State<HomePage> {
                       l10n.homeAreaWest,
                       style: TextStyle(color: AppColors.textHint),
                     ),
-                    onTap: () {
-                      AppNotice.show(
-                        context,
-                        message: l10n.filterAreaComingSoon,
-                      );
-                    },
+                    onTap: () => _showAreaComingSoon(context),
                   ),
                   ListTile(
                     contentPadding: const EdgeInsets.only(left: 72, right: 16),
@@ -465,12 +459,7 @@ class _HomePageState extends State<HomePage> {
                       l10n.homeAreaEast,
                       style: TextStyle(color: AppColors.textHint),
                     ),
-                    onTap: () {
-                      AppNotice.show(
-                        context,
-                        message: l10n.filterAreaComingSoon,
-                      );
-                    },
+                    onTap: () => _showAreaComingSoon(context),
                   ),
                   ListTile(
                     contentPadding: const EdgeInsets.only(left: 72, right: 16),
@@ -478,12 +467,7 @@ class _HomePageState extends State<HomePage> {
                       l10n.homeAreaNorth,
                       style: TextStyle(color: AppColors.textHint),
                     ),
-                    onTap: () {
-                      AppNotice.show(
-                        context,
-                        message: l10n.filterAreaComingSoon,
-                      );
-                    },
+                    onTap: () => _showAreaComingSoon(context),
                   ),
                   ListTile(
                     contentPadding: const EdgeInsets.only(left: 72, right: 16),
@@ -491,12 +475,7 @@ class _HomePageState extends State<HomePage> {
                       l10n.homeAreaGreaterJakarta,
                       style: TextStyle(color: AppColors.textHint),
                     ),
-                    onTap: () {
-                      AppNotice.show(
-                        context,
-                        message: l10n.filterAreaComingSoon,
-                      );
-                    },
+                    onTap: () => _showAreaComingSoon(context),
                   ),
                 ],
               ),
