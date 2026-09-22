@@ -30,51 +30,77 @@ import '../../features/auth/presentation/pages/edit_profile_page.dart';
 final GoRouter appRouter = GoRouter(
   initialLocation: '/',
   routes: [
-    // ── Tab Utama (Menggunakan NoTransitionPage agar panel navigasi bawah tidak ikut ter-slide) ──
-
-    // Tab 0: Beranda
-    GoRoute(
-      path: '/',
-      pageBuilder: (context, state) =>
-          const NoTransitionPage(child: HomePage()),
+    // Kelima tab utama tetap hidup di IndexedStack agar state, scroll, dan
+    // data yang sudah dimuat tidak hilang ketika pengguna berpindah tab.
+    StatefulShellRoute.indexedStack(
+      builder: (context, state, navigationShell) => navigationShell,
+      branches: [
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/',
+              pageBuilder: (context, state) =>
+                  const NoTransitionPage(child: HomePage()),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/timetable',
+              pageBuilder: (context, state) =>
+                  const NoTransitionPage(child: TimetablePage()),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/tiket',
+              pageBuilder: (context, state) {
+                final from = state.uri.queryParameters['from'];
+                final to = state.uri.queryParameters['to'];
+                final fare = state.uri.queryParameters['fare'];
+                final duration = state.uri.queryParameters['duration'];
+                final transit = state.uri.queryParameters['transit'];
+                return NoTransitionPage(
+                  child: TicketsPage(
+                    alarmController: TravelAlarmScope.of(context),
+                    from: from,
+                    to: to,
+                    fare: fare,
+                    duration: duration,
+                    transit: transit,
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/asisten',
+              pageBuilder: (context, state) => NoTransitionPage(
+                child: AssistantPage(
+                  alarmController: TravelAlarmScope.of(context),
+                ),
+              ),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/akun',
+              pageBuilder: (context, state) =>
+                  const NoTransitionPage(child: ProfilePage()),
+            ),
+          ],
+        ),
+      ],
     ),
 
-    // Tab 1: Jadwal (Timetable)
-    GoRoute(
-      path: '/timetable',
-      pageBuilder: (context, state) =>
-          const NoTransitionPage(child: TimetablePage()),
-    ),
-
-    // Tab 2: Tiket Saya - Tiket QR (dengan opsi parameter query)
-    GoRoute(
-      path: '/tiket',
-      pageBuilder: (context, state) {
-        final from = state.uri.queryParameters['from'];
-        final to = state.uri.queryParameters['to'];
-        final fare = state.uri.queryParameters['fare'];
-        final duration = state.uri.queryParameters['duration'];
-        final transit = state.uri.queryParameters['transit'];
-        return NoTransitionPage(
-          child: TicketsPage(
-            alarmController: TravelAlarmScope.of(context),
-            from: from,
-            to: to,
-            fare: fare,
-            duration: duration,
-            transit: transit,
-          ),
-        );
-      },
-    ),
-
-    // Tab 3: Asisten
-    GoRoute(
-      path: '/asisten',
-      pageBuilder: (context, state) => NoTransitionPage(
-        child: AssistantPage(alarmController: TravelAlarmScope.of(context)),
-      ),
-    ),
     GoRoute(
       path: '/asisten/pemandu-kamera',
       builder: (context, state) => CameraGuidePage(
@@ -85,12 +111,6 @@ final GoRouter appRouter = GoRouter(
     // Tautan lama tetap menuju tab Asisten.
     GoRoute(path: '/promo', redirect: (context, state) => '/asisten'),
 
-    // Tab 4: Akun
-    GoRoute(
-      path: '/akun',
-      pageBuilder: (context, state) =>
-          const NoTransitionPage(child: ProfilePage()),
-    ),
     GoRoute(path: '/masuk', builder: (context, state) => const AuthPage()),
     GoRoute(
       path: '/daftar',
