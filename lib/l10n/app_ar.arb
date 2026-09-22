@@ -624,6 +624,7 @@
   "homeShowAll": "إظهار الكل ({count})",
   "homeTravelDuration": "مدة الرحلة {duration}",
   "homePlatform": "الرصيف {platform}",
+  "homePlatformUnavailable": "الرصيف غير متاح",
   "homeDestination": "الوجهة {destination}",
   "homeArrivingIn": "الوصول خلال {duration}",
   "homeAtStation": "في المحطة",

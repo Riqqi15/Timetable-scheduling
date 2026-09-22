@@ -1960,6 +1960,9 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get homePlatformUnavailable => '站台信息暂不可用';
+
+  @override
   String homeDestination(String destination) {
     return '目的地 $destination';
   }
@@ -4318,6 +4321,9 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
   String homePlatform(String platform) {
     return '平台 $platform';
   }
+
+  @override
+  String get homePlatformUnavailable => '站台信息暂不可用';
 
   @override
   String homeDestination(String destination) {

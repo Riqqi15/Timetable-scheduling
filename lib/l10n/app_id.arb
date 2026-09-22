@@ -841,6 +841,7 @@
   "@homePlatform": {
     "placeholders": { "platform": { "type": "String" } }
   },
+  "homePlatformUnavailable": "Peron belum tersedia",
   "homeDestination": "Tujuan {destination}",
   "@homeDestination": {
     "placeholders": { "destination": { "type": "String" } }

@@ -100,15 +100,12 @@ void main() {
     expect(timetable.trainType, 'KRL');
     expect(timetable.isWeekend, isFalse);
     expect(controller.state, NextTrainState.success);
-    expect(
-      controller.groups.map((group) => group.nextStation),
-      ['Cikini', 'Tebet'],
-    );
+    expect(controller.groups.map((group) => group.nextStation), [
+      'Cikini',
+      'Tebet',
+    ]);
     expect(controller.groups.first.departures, hasLength(2));
-    expect(
-      controller.groups.first.departures.first.minutesUntilDeparture,
-      5,
-    );
+    expect(controller.groups.first.departures.first.minutesUntilDeparture, 5);
   });
 
   test('supports a departure after midnight through dayOffset', () async {
@@ -132,10 +129,7 @@ void main() {
 
     await controller.loadStation('Manggarai');
 
-    expect(
-      controller.groups.single.departures.single.minutesUntilDeparture,
-      5,
-    );
+    expect(controller.groups.single.departures.single.minutesUntilDeparture, 5);
   });
 
   test('keeps cached departures when a refresh fails', () async {
@@ -167,4 +161,3 @@ void main() {
     expect(controller.groups, isNotEmpty);
   });
 }
-

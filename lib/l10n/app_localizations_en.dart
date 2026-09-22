@@ -2038,6 +2038,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get homePlatformUnavailable => 'Platform unavailable';
+
+  @override
   String homeDestination(String destination) {
     return 'Destination $destination';
   }

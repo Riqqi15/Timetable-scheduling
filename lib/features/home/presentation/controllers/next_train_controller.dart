@@ -145,26 +145,29 @@ class NextTrainController extends ChangeNotifier {
       ).add(Duration(days: schedule.dayOffset));
       if (departureAt.isBefore(current)) continue;
       final minutes = (departureAt.difference(current).inSeconds / 60).ceil();
-      grouped.putIfAbsent(nextStation, () => []).add(
-        NextTrainDeparture(
-          schedule: schedule,
-          departureAt: departureAt,
-          minutesUntilDeparture: minutes,
-        ),
-      );
+      grouped
+          .putIfAbsent(nextStation, () => [])
+          .add(
+            NextTrainDeparture(
+              schedule: schedule,
+              departureAt: departureAt,
+              minutesUntilDeparture: minutes,
+            ),
+          );
     }
 
-    final nextGroups = grouped.entries.map((entry) {
-      entry.value.sort((a, b) => a.departureAt.compareTo(b.departureAt));
-      return NextTrainDirectionGroup(
-        nextStation: entry.key,
-        departures: entry.value.take(2).toList(growable: false),
-      );
-    }).toList()..sort(
-      (a, b) => a.departures.first.departureAt.compareTo(
-        b.departures.first.departureAt,
-      ),
-    );
+    final nextGroups =
+        grouped.entries.map((entry) {
+          entry.value.sort((a, b) => a.departureAt.compareTo(b.departureAt));
+          return NextTrainDirectionGroup(
+            nextStation: entry.key,
+            departures: entry.value.take(2).toList(growable: false),
+          );
+        }).toList()..sort(
+          (a, b) => a.departures.first.departureAt.compareTo(
+            b.departures.first.departureAt,
+          ),
+        );
     groups = nextGroups;
     state = groups.isEmpty ? NextTrainState.empty : NextTrainState.success;
     notifyListeners();
@@ -176,4 +179,3 @@ class NextTrainController extends ChangeNotifier {
     super.dispose();
   }
 }
-

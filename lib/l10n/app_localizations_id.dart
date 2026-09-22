@@ -2049,6 +2049,9 @@ class AppLocalizationsId extends AppLocalizations {
   }
 
   @override
+  String get homePlatformUnavailable => 'Peron belum tersedia';
+
+  @override
   String homeDestination(String destination) {
     return 'Tujuan $destination';
   }

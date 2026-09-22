@@ -3757,6 +3757,12 @@ abstract class AppLocalizations {
   /// **'Peron {platform}'**
   String homePlatform(String platform);
 
+  /// No description provided for @homePlatformUnavailable.
+  ///
+  /// In id, this message translates to:
+  /// **'Peron belum tersedia'**
+  String get homePlatformUnavailable;
+
   /// No description provided for @homeDestination.
   ///
   /// In id, this message translates to:

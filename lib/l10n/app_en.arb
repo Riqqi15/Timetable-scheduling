@@ -843,6 +843,7 @@
   "@homePlatform": {
     "placeholders": { "platform": { "type": "String" } }
   },
+  "homePlatformUnavailable": "Platform unavailable",
   "homeDestination": "Destination {destination}",
   "@homeDestination": {
     "placeholders": { "destination": { "type": "String" } }

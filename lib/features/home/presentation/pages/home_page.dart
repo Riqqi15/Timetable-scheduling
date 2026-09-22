@@ -1,316 +1,40 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/app_notice.dart';
 import '../../../../shared/widgets/bottom_nav_bar.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../data/krl_station_locations.dart';
+import '../../data/services/user_location_service.dart';
+import '../../domain/entities/station_geo_point.dart';
+import '../../../timetable/domain/services/platform_display.dart';
+import '../controllers/next_train_controller.dart';
 import '../widgets/station_located_map.dart';
-
-class _DepartureInfo {
-  final String lineType;
-  final String destination;
-  final String duration;
-  final String platform;
-  final String travelDuration;
-  const _DepartureInfo(
-    this.lineType,
-    this.destination,
-    this.duration, [
-    this.platform = '1',
-    this.travelDuration = '',
-  ]);
-}
-
-class _StationInfo {
-  final String name;
-  final List<_DepartureInfo> departures;
-
-  const _StationInfo({required this.name, required this.departures});
-}
-
-const Map<String, _StationInfo> _stationInfoMap = {
-  'Setiabudi': _StationInfo(
-    name: 'Setiabudi',
-    departures: [
-      _DepartureInfo('MRT', 'Bundaran HI', '3 menit', '1', '5 menit'),
-      _DepartureInfo('MRT', 'Lebak Bulus', '5 menit', '2', '24 menit'),
-      _DepartureInfo('LRT', 'Dukuh Atas', '4 menit', '3', '3 menit'),
-      _DepartureInfo('LRT', 'Cawang', '8 menit', '4', '15 menit'),
-    ],
-  ),
-  'Cawang': _StationInfo(
-    name: 'Cawang',
-    departures: [
-      _DepartureInfo('LRT', 'Dukuh Atas', '4 menit', '1', '18 menit'),
-      _DepartureInfo('LRT', 'Jatimulya', '6 menit', '2', '20 menit'),
-      _DepartureInfo('LRT', 'Harjamukti', '5 menit', '3', '12 menit'),
-      _DepartureInfo('KRL', 'Manggarai', '7 menit', '4', '8 menit'),
-    ],
-  ),
-  'Manggarai': _StationInfo(
-    name: 'Manggarai',
-    departures: [
-      _DepartureInfo('KRL', 'Jakarta Kota', '5 menit', '10', '10 menit'),
-      _DepartureInfo('KRL', 'Bogor', '4 menit', '12', '50 menit'),
-      _DepartureInfo('KRL', 'Tanah Abang', '6 menit', '6', '8 menit'),
-      _DepartureInfo('KRL', 'Bekasi', '8 menit', '3', '35 menit'),
-    ],
-  ),
-  'Tanah Abang': _StationInfo(
-    name: 'Tanah Abang',
-    departures: [
-      _DepartureInfo('KRL', 'Rangkasbitung', '5 menit', '5', '75 menit'),
-      _DepartureInfo('KRL', 'Manggarai', '4 menit', '2', '8 menit'),
-      _DepartureInfo('KRL', 'Kampung Bandan', '7 menit', '3', '15 menit'),
-    ],
-  ),
-  'Halim': _StationInfo(
-    name: 'Halim',
-    departures: [
-      _DepartureInfo('LRT', 'Dukuh Atas', '7 menit', '1', '22 menit'),
-      _DepartureInfo('LRT', 'Jatimulya', '6 menit', '2', '15 menit'),
-    ],
-  ),
-  'Bundaran HI': _StationInfo(
-    name: 'Bundaran HI',
-    departures: [
-      _DepartureInfo('MRT', 'Lebak Bulus', '6 menit', '1', '30 menit'),
-      _DepartureInfo('MRT', 'Dukuh Atas', '3 menit', '2', '2 menit'),
-    ],
-  ),
-  'Blok M BCA': _StationInfo(
-    name: 'Blok M BCA',
-    departures: [
-      _DepartureInfo('MRT', 'Bundaran HI', '4 menit', '1', '12 menit'),
-      _DepartureInfo('MRT', 'Lebak Bulus', '5 menit', '2', '18 menit'),
-    ],
-  ),
-  'Dukuh Atas': _StationInfo(
-    name: 'Dukuh Atas',
-    departures: [
-      _DepartureInfo('MRT', 'Bundaran HI', '3 menit', '1', '2 menit'),
-      _DepartureInfo('MRT', 'Lebak Bulus', '4 menit', '2', '28 menit'),
-      _DepartureInfo('LRT', 'Cawang', '5 menit', '3', '18 menit'),
-      _DepartureInfo('LRT', 'Jatimulya', '6 menit', '4', '38 menit'),
-    ],
-  ),
-  'Jatinegara': _StationInfo(
-    name: 'Jatinegara',
-    departures: [
-      _DepartureInfo('KRL', 'Cikarang', '6 menit', '1', '40 menit'),
-      _DepartureInfo('KRL', 'Kampung Bandan', '5 menit', '2', '20 menit'),
-      _DepartureInfo('KRL', 'Manggarai', '7 menit', '3', '10 menit'),
-    ],
-  ),
-  'Jakarta Kota': _StationInfo(
-    name: 'Jakarta Kota',
-    departures: [
-      _DepartureInfo('KRL', 'Bogor', '5 menit', '1', '60 menit'),
-      _DepartureInfo('KRL', 'Tanjung Priok', '8 menit', '2', '15 menit'),
-    ],
-  ),
-  'Kampung Bandan': _StationInfo(
-    name: 'Kampung Bandan',
-    departures: [
-      _DepartureInfo('KRL', 'Jakarta Kota', '4 menit', '1', '5 menit'),
-      _DepartureInfo('KRL', 'Tanah Abang', '6 menit', '2', '15 menit'),
-      _DepartureInfo('KRL', 'Pasar Senen', '5 menit', '3', '10 menit'),
-    ],
-  ),
-  'Bekasi': _StationInfo(
-    name: 'Bekasi',
-    departures: [
-      _DepartureInfo('KRL', 'Jatinegara', '6 menit', '1', '18 menit'),
-      _DepartureInfo('KRL', 'Cikarang', '7 menit', '2', '20 menit'),
-    ],
-  ),
-  'Lebak Bulus': _StationInfo(
-    name: 'Lebak Bulus',
-    departures: [
-      _DepartureInfo('MRT', 'Bundaran HI', '5 menit', '1', '30 menit'),
-    ],
-  ),
-  'Duri': _StationInfo(
-    name: 'Duri',
-    departures: [
-      _DepartureInfo('KRL', 'Tangerang', '6 menit', '1', '25 menit'),
-      _DepartureInfo('KRL', 'Tanah Abang', '5 menit', '2', '8 menit'),
-    ],
-  ),
-  'Citayam': _StationInfo(
-    name: 'Citayam',
-    departures: [
-      _DepartureInfo('KRL', 'Bogor', '4 menit', '1', '15 menit'),
-      _DepartureInfo('KRL', 'Nambo', '6 menit', '2', '20 menit'),
-      _DepartureInfo('KRL', 'Jakarta Kota', '5 menit', '3', '45 menit'),
-    ],
-  ),
-};
-
-_StationInfo _getDynamicStationInfo(String stationName) {
-  if (_stationInfoMap.containsKey(stationName)) {
-    return _stationInfoMap[stationName]!;
-  }
-
-  final nameLower = stationName.toLowerCase();
-
-  if (nameLower.contains('lrt') ||
-      nameLower.contains('rasuna') ||
-      nameLower.contains('kuningan') ||
-      nameLower.contains('pancoran') ||
-      nameLower.contains('cikoko') ||
-      nameLower.contains('ciliwung') ||
-      nameLower.contains('jatibening') ||
-      nameLower.contains('cikunir') ||
-      nameLower.contains('jatimulya') ||
-      nameLower.contains('harjamukti') ||
-      nameLower.contains('ciracas') ||
-      nameLower.contains('rambutan') ||
-      nameLower.contains('taman mini')) {
-    return _StationInfo(
-      name: stationName,
-      departures: [
-        _DepartureInfo('LRT', 'Dukuh Atas', '4 menit', '1', '15 menit'),
-        _DepartureInfo(
-          'LRT',
-          nameLower.contains('cibubur') || nameLower.contains('harjamukti')
-              ? 'Harjamukti'
-              : 'Jati Mulya',
-          '8 menit',
-          '2',
-          '25 menit',
-        ),
-      ],
-    );
-  }
-
-  if (nameLower.contains('mrt') ||
-      nameLower.contains('lebak') ||
-      nameLower.contains('fatmawati') ||
-      nameLower.contains('cipete') ||
-      nameLower.contains('haji nawi') ||
-      nameLower.contains('blok') ||
-      nameLower.contains('asean') ||
-      nameLower.contains('senayan') ||
-      nameLower.contains('istora') ||
-      nameLower.contains('bendungan') ||
-      nameLower.contains('hi')) {
-    return _StationInfo(
-      name: stationName,
-      departures: [
-        _DepartureInfo('MRT', 'Bundaran HI', '3 menit', '1', '12 menit'),
-        _DepartureInfo('MRT', 'Lebak Bulus', '6 menit', '2', '20 menit'),
-      ],
-    );
-  }
-
-  if (nameLower.contains('rangkas') ||
-      nameLower.contains('palmerah') ||
-      nameLower.contains('kebayoran') ||
-      nameLower.contains('ranji') ||
-      nameLower.contains('jurangmangu') ||
-      nameLower.contains('sudimara') ||
-      nameLower.contains('buntu') ||
-      nameLower.contains('serpong') ||
-      nameLower.contains('cisauk') ||
-      nameLower.contains('parung') ||
-      nameLower.contains('tigaraksa') ||
-      nameLower.contains('maja')) {
-    return _StationInfo(
-      name: stationName,
-      departures: [
-        _DepartureInfo('KRL', 'Tanah Abang', '5 menit', '1', '25 menit'),
-        _DepartureInfo('KRL', 'Rangkasbitung', '10 menit', '2', '55 menit'),
-      ],
-    );
-  }
-
-  if (nameLower.contains('tangerang') ||
-      nameLower.contains('grogol') ||
-      nameLower.contains('pesing') ||
-      nameLower.contains('taman kota') ||
-      nameLower.contains('bojong indah') ||
-      nameLower.contains('rawa buaya') ||
-      nameLower.contains('kalideres') ||
-      nameLower.contains('poris') ||
-      nameLower.contains('batu ceper')) {
-    return _StationInfo(
-      name: stationName,
-      departures: [
-        _DepartureInfo('KRL', 'Duri', '4 menit', '1', '18 menit'),
-        _DepartureInfo('KRL', 'Tangerang', '7 menit', '2', '22 menit'),
-      ],
-    );
-  }
-
-  if (nameLower.contains('priok') ||
-      nameLower.contains('ancol') ||
-      nameLower.contains('jis') ||
-      nameLower.contains('stadium')) {
-    return _StationInfo(
-      name: stationName,
-      departures: [
-        _DepartureInfo('KRL', 'Jakarta Kota', '6 menit', '1', '10 menit'),
-        _DepartureInfo('KRL', 'Tanjung Priok', '12 menit', '2', '12 menit'),
-      ],
-    );
-  }
-
-  if (nameLower.contains('velodrome') ||
-      nameLower.contains('pegangsaan') ||
-      nameLower.contains('boulevard') ||
-      nameLower.contains('pulomas') ||
-      nameLower.contains('equestrian')) {
-    return _StationInfo(
-      name: stationName,
-      departures: [
-        _DepartureInfo('LRT', 'Pegangsaan Dua', '5 menit', '1', '10 menit'),
-        _DepartureInfo('LRT', 'Velodrome', '8 menit', '2', '8 menit'),
-      ],
-    );
-  }
-
-  if (nameLower.contains('cikarang') ||
-      nameLower.contains('bekasi') ||
-      nameLower.contains('tambun') ||
-      nameLower.contains('cibitung') ||
-      nameLower.contains('klender') ||
-      nameLower.contains('buaran') ||
-      nameLower.contains('cakung') ||
-      nameLower.contains('kranji') ||
-      nameLower.contains('sentiong') ||
-      nameLower.contains('senen') ||
-      nameLower.contains('kemayoran') ||
-      nameLower.contains('rajawali')) {
-    return _StationInfo(
-      name: stationName,
-      departures: [
-        _DepartureInfo('KRL', 'Angke / Kp. Bandan', '5 menit', '1', '30 menit'),
-        _DepartureInfo('KRL', 'Cikarang', '9 menit', '2', '40 menit'),
-      ],
-    );
-  }
-
-  return _StationInfo(
-    name: stationName,
-    departures: [
-      _DepartureInfo('KRL', 'Jakarta Kota', '4 menit', '1', '25 menit'),
-      _DepartureInfo('KRL', 'Bogor', '7 menit', '2', '35 menit'),
-    ],
-  );
-}
 
 /// Halaman Beranda (Screen 3 di Figma)
 /// Menampilkan peta skematik berwarna, filter jalur, info stasiun terdekat,
 /// dan banner aksesibilitas. Stasiun di peta bisa diklik.
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  const HomePage({
+    super.key,
+    this.nextTrainController,
+    this.locationService = const UserLocationService(),
+    this.stationLocations = krlStationLocations,
+  });
+
+  final NextTrainController? nextTrainController;
+  final UserLocationService locationService;
+  final List<StationGeoPoint> stationLocations;
 
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
+  late final bool _ownsNextTrainController;
+  late final NextTrainController _nextTrainController;
   String? _selectedStation;
   String? _selectedStationId;
   String? _fromStation;
@@ -333,6 +57,24 @@ class _HomePageState extends State<HomePage> {
   };
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  @override
+  void initState() {
+    super.initState();
+    _ownsNextTrainController = widget.nextTrainController == null;
+    _nextTrainController = widget.nextTrainController ?? NextTrainController();
+  }
+
+  void _onNearestStationChanged(StationGeoPoint? station) {
+    unawaited(_nextTrainController.loadStation(station?.name));
+  }
+
+  @override
+  void dispose() {
+    _sheetController.dispose();
+    if (_ownsNextTrainController) _nextTrainController.dispose();
+    super.dispose();
+  }
 
   Widget _buildFilterOption(String label, List<String> lineIds, Color color) {
     final isAllSelected = lineIds.every((id) => _visibleLineIds.contains(id));
@@ -664,11 +406,6 @@ class _HomePageState extends State<HomePage> {
     final currentStation = selectedParam ?? _selectedStation;
     final currentStationId = selectedIdParam ?? _selectedStationId;
 
-    final info = currentStation != null
-        ? (_stationInfoMap[currentStation] ??
-              _getDynamicStationInfo(currentStation))
-        : null;
-
     return PopScope(
       canPop: currentStation == null,
       onPopInvokedWithResult: (didPop, result) {
@@ -821,11 +558,14 @@ class _HomePageState extends State<HomePage> {
                         fromStation: _fromStation,
                         visibleLineIds: _visibleLineIds,
                         onStationSelected: _onStationSelected,
+                        onNearestStationChanged: _onNearestStationChanged,
+                        locationService: widget.locationService,
+                        stationLocations: widget.stationLocations,
                       ),
                     ),
 
                     // ── Panel Info Stasiun (DraggableSheet: tampilkan header saja, drag ke atas untuk detail) ──
-                    if (info != null)
+                    if (currentStation != null)
                       DraggableScrollableSheet(
                         controller: _sheetController,
                         initialChildSize: 0.23,
@@ -969,7 +709,7 @@ class _HomePageState extends State<HomePage> {
                                               const SizedBox(width: 10),
                                               Flexible(
                                                 child: Text(
-                                                  info.name,
+                                                  currentStation,
                                                   style: const TextStyle(
                                                     fontSize: 22,
                                                     fontWeight: FontWeight.w700,
@@ -1085,19 +825,20 @@ class _HomePageState extends State<HomePage> {
                                     const SizedBox(height: 12),
 
                                     _NextTrainBoard(
-                                      stationName: info.name,
-                                      departures: info.departures,
+                                      controller: _nextTrainController,
                                       onDepartureTap: (dep) {
+                                        final schedule = dep.schedule;
                                         final uri = Uri(
                                           path: '/departure-detail',
                                           queryParameters: {
-                                            'lineType': dep.lineType,
-                                            'destination': dep.destination,
-                                            'duration': _localizedDuration(
-                                              l10n,
-                                              dep.duration,
-                                            ),
-                                            'platform': dep.platform,
+                                            'lineType': schedule.trainType,
+                                            'destination':
+                                                schedule.destination ?? '',
+                                            'duration': l10n
+                                                .scheduleStatusUpcoming(
+                                                  dep.minutesUntilDeparture,
+                                                ),
+                                            'platform': schedule.platform,
                                           },
                                         );
                                         context.push(uri.toString());
@@ -1110,7 +851,7 @@ class _HomePageState extends State<HomePage> {
 
                                     // ── Fasilitas Stasiun ──
                                     _StationFacilitiesSection(
-                                      stationName: info.name,
+                                      stationName: currentStation,
                                     ),
 
                                     const SizedBox(height: 16),
@@ -1118,7 +859,9 @@ class _HomePageState extends State<HomePage> {
                                     const SizedBox(height: 12),
 
                                     // ── Informasi Stasiun ──
-                                    _StationInfoSection(stationName: info.name),
+                                    _StationInfoSection(
+                                      stationName: currentStation,
+                                    ),
 
                                     const SizedBox(height: 16),
                                     const Divider(color: AppColors.cardBorder),
@@ -1126,7 +869,7 @@ class _HomePageState extends State<HomePage> {
 
                                     // ── Panduan Pintu Keluar ──
                                     _StationExitGateSection(
-                                      stationName: info.name,
+                                      stationName: currentStation,
                                     ),
 
                                     const SizedBox(height: 16),
@@ -1135,7 +878,7 @@ class _HomePageState extends State<HomePage> {
 
                                     // ── Customer Service & Bantuan ──
                                     _StationCustomerServiceSection(
-                                      stationName: info.name,
+                                      stationName: currentStation,
                                     ),
                                     const SizedBox(height: 24),
                                   ],
@@ -1159,114 +902,165 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-class _NextTrainBoard extends StatefulWidget {
-  final String stationName;
-  final List<_DepartureInfo> departures;
-  final ValueChanged<_DepartureInfo> onDepartureTap;
+class _NextTrainBoard extends StatelessWidget {
+  final NextTrainController controller;
+  final ValueChanged<NextTrainDeparture> onDepartureTap;
 
   const _NextTrainBoard({
-    required this.stationName,
-    required this.departures,
+    required this.controller,
     required this.onDepartureTap,
   });
 
   @override
-  State<_NextTrainBoard> createState() => _NextTrainBoardState();
-}
-
-class _NextTrainBoardState extends State<_NextTrainBoard> {
-  bool _isExpanded = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final int maxVisible = 2;
-    final bool hasMore = widget.departures.length > maxVisible;
-    final visibleDepartures = _isExpanded || !hasMore
-        ? widget.departures
-        : widget.departures.take(maxVisible).toList();
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFF),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.cardBorder),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 7,
-                height: 7,
-                decoration: const BoxDecoration(
-                  color: AppColors.statusGreen,
-                  shape: BoxShape.circle,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  AppLocalizations.of(
-                    context,
-                  )!.homeNextTrainFrom(widget.stationName),
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.textPrimary,
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: controller,
+    builder: (context, _) {
+      final l10n = AppLocalizations.of(context)!;
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF8FAFF),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.cardBorder),
+        ),
+        child: Column(
+          key: const Key('next-train-board'),
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 7,
+                  height: 7,
+                  decoration: BoxDecoration(
+                    color: controller.state == NextTrainState.success
+                        ? AppColors.statusGreen
+                        : AppColors.textHint,
+                    shape: BoxShape.circle,
                   ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          ...visibleDepartures.map((departure) {
-            final isLastVisible = departure == visibleDepartures.last;
-            return _NextTrainRow(
-              departure: departure,
-              showDivider: !isLastVisible,
-              onTap: () => widget.onDepartureTap(departure),
-            );
-          }),
-          if (hasMore) ...[
-            if (!_isExpanded) const SizedBox(height: 4),
-            InkWell(
-              onTap: () {
-                setState(() {
-                  _isExpanded = !_isExpanded;
-                });
-              },
-              borderRadius: BorderRadius.circular(8),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Center(
+                const SizedBox(width: 8),
+                Expanded(
                   child: Text(
-                    _isExpanded
-                        ? AppLocalizations.of(context)!.homeClose
-                        : AppLocalizations.of(
-                            context,
-                          )!.homeShowAll(widget.departures.length),
+                    controller.stationName == null
+                        ? l10n.nextTrain
+                        : l10n.homeNextTrainFrom(controller.stationName!),
                     style: const TextStyle(
-                      color: AppColors.primaryBlue,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                 ),
-              ),
+              ],
             ),
+            const SizedBox(height: 10),
+            if (controller.state == NextTrainState.loading)
+              const LinearProgressIndicator(
+                key: Key('next-train-loading'),
+                minHeight: 3,
+                borderRadius: BorderRadius.all(Radius.circular(3)),
+              )
+            else if (controller.state == NextTrainState.idle)
+              _NextTrainMessage(
+                icon: Icons.location_searching_rounded,
+                message: l10n.mapLocationUnconfirmed,
+              )
+            else if (controller.state == NextTrainState.error)
+              _NextTrainMessage(
+                icon: Icons.cloud_off_rounded,
+                message: l10n.scheduleBackendError,
+                onRetry: controller.retry,
+              )
+            else if (controller.state == NextTrainState.empty)
+              _NextTrainMessage(
+                icon: Icons.schedule_rounded,
+                message: l10n.scheduleNotFound,
+                onRetry: controller.retry,
+              )
+            else
+              for (final group in controller.groups) ...[
+                Padding(
+                  key: ValueKey('next-train-direction-${group.nextStation}'),
+                  padding: const EdgeInsets.only(top: 6, bottom: 2),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.arrow_forward_rounded,
+                        size: 17,
+                        color: AppColors.primaryBlue,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        group.nextStation,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.primaryBlue,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                for (var i = 0; i < group.departures.length; i++)
+                  _NextTrainRow(
+                    departure: group.departures[i],
+                    showDivider: i < group.departures.length - 1,
+                    onTap: () => onDepartureTap(group.departures[i]),
+                  ),
+              ],
+            if (controller.isRefreshing) ...[
+              const SizedBox(height: 8),
+              const LinearProgressIndicator(minHeight: 2),
+            ],
+            if (controller.hasRefreshError)
+              _NextTrainMessage(
+                icon: Icons.sync_problem_rounded,
+                message: l10n.scheduleBackendError,
+                onRetry: controller.retry,
+              ),
           ],
-        ],
+        ),
+      );
+    },
+  );
+}
+
+class _NextTrainMessage extends StatelessWidget {
+  const _NextTrainMessage({
+    required this.icon,
+    required this.message,
+    this.onRetry,
+  });
+
+  final IconData icon;
+  final String message;
+  final VoidCallback? onRetry;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    children: [
+      Icon(icon, size: 20, color: AppColors.textSecondary),
+      const SizedBox(width: 8),
+      Expanded(
+        child: Text(
+          message,
+          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+        ),
       ),
-    );
-  }
+      if (onRetry != null)
+        TextButton(
+          onPressed: onRetry,
+          child: Text(AppLocalizations.of(context)!.actionRetry),
+        ),
+    ],
+  );
 }
 
 class _NextTrainRow extends StatelessWidget {
-  final _DepartureInfo departure;
+  final NextTrainDeparture departure;
   final bool showDivider;
   final VoidCallback onTap;
 
@@ -1277,10 +1071,10 @@ class _NextTrainRow extends StatelessWidget {
   });
 
   Color get _badgeColor {
-    if (departure.lineType == 'KRL') {
+    if (departure.schedule.trainType == 'KRL') {
       return AppColors.badgeKRL;
     }
-    if (departure.lineType == 'MRT') {
+    if (departure.schedule.trainType == 'MRT') {
       return AppColors.badgeMRT;
     }
     return AppColors.badgeLRT;
@@ -1288,6 +1082,12 @@ class _NextTrainRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final schedule = departure.schedule;
+    final destination = schedule.destination ?? '';
+    final platform = PlatformDisplay.isAvailable(schedule.platform)
+        ? l10n.homePlatform(schedule.platform)
+        : l10n.homePlatformUnavailable;
     return InkWell(
       borderRadius: BorderRadius.circular(12),
       onTap: onTap,
@@ -1307,7 +1107,7 @@ class _NextTrainRow extends StatelessWidget {
                   ),
                   alignment: Alignment.center,
                   child: Text(
-                    departure.lineType,
+                    schedule.trainType,
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 10,
@@ -1322,7 +1122,7 @@ class _NextTrainRow extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        departure.destination,
+                        destination,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
@@ -1332,28 +1132,22 @@ class _NextTrainRow extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 3),
-                      if (departure.travelDuration.isNotEmpty) ...[
-                        Text(
-                          AppLocalizations.of(
-                            context,
-                          )!.homeTravelDuration(departure.travelDuration),
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.textSecondary,
-                          ),
+                      Text(
+                        '${schedule.trainName} · ${schedule.departureTime}',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textSecondary,
                         ),
-                        const SizedBox(height: 3),
-                      ],
+                      ),
+                      const SizedBox(height: 3),
                       Wrap(
                         spacing: 6,
                         runSpacing: 2,
                         crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
                           Text(
-                            AppLocalizations.of(
-                              context,
-                            )!.homePlatform(departure.platform),
+                            platform,
                             style: const TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
@@ -1361,9 +1155,7 @@ class _NextTrainRow extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            AppLocalizations.of(
-                              context,
-                            )!.homeDestination(departure.destination),
+                            l10n.homeDestination(destination),
                             style: const TextStyle(
                               fontSize: 11,
                               color: AppColors.textHint,
@@ -1380,11 +1172,8 @@ class _NextTrainRow extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      AppLocalizations.of(context)!.homeArrivingIn(
-                        _localizedDuration(
-                          AppLocalizations.of(context)!,
-                          departure.duration,
-                        ),
+                      l10n.scheduleStatusUpcoming(
+                        departure.minutesUntilDeparture,
                       ),
                       textAlign: TextAlign.right,
                       style: const TextStyle(
@@ -1413,11 +1202,6 @@ class _NextTrainRow extends StatelessWidget {
       ),
     );
   }
-}
-
-String _localizedDuration(AppLocalizations l10n, String value) {
-  final match = RegExp(r'^(\d+) menit$').firstMatch(value);
-  return match == null ? value : '${match.group(1)} ${l10n.minutesOnly}';
 }
 
 // ── Section Preview Fasilitas Stasiun ──

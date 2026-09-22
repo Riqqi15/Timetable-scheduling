@@ -2026,6 +2026,9 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String get homePlatformUnavailable => 'الرصيف غير متاح';
+
+  @override
   String homeDestination(String destination) {
     return 'الوجهة $destination';
   }

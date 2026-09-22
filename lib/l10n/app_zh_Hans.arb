@@ -1004,6 +1004,7 @@
       }
     }
   },
+  "homePlatformUnavailable": "站台信息暂不可用",
   "homeDestination": "目的地 {destination}",
   "@homeDestination": {
     "placeholders": {
