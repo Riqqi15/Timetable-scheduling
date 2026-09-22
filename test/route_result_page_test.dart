@@ -29,6 +29,24 @@ class _Repository implements RouteRepository {
   }) => handler();
 }
 
+class _PreferenceRepository implements RouteRepository {
+  final retry = Completer<RoutePlan>();
+  int minimumTransferCalls = 0;
+
+  @override
+  Future<RoutePlan> plan({
+    required String from,
+    required String to,
+    required RoutePreference preference,
+    int passengerCount = 1,
+  }) async {
+    if (preference == RoutePreference.fastest) return testRoute;
+    minimumTransferCalls++;
+    if (minimumTransferCalls == 1) throw Exception('temporary');
+    return retry.future;
+  }
+}
+
 class _Speech implements RouteSpeechService {
   @override
   Future<void> pause() async {}
@@ -251,6 +269,33 @@ void main() {
     expect(find.text('Ulangi'), findsOneWidget);
     expect(find.text('Jeda'), findsOneWidget);
     expect(find.text('Hentikan'), findsOneWidget);
+  });
+
+  testWidgets('route remains visible while a missing preference retries', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(800, 1800));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final repository = _PreferenceRepository();
+    final controller = RouteController(repository, _Speech());
+    addTearDown(controller.dispose);
+
+    await tester.pumpWidget(_page(controller));
+    await tester.pumpAndSettle();
+    expect(find.text('134'), findsOneWidget);
+
+    await tester.tap(find.text('Minim transit'));
+    await tester.pump();
+
+    expect(find.text('134'), findsOneWidget);
+    expect(
+      find.byKey(const Key('route-preference-progress')),
+      findsOneWidget,
+    );
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+
+    repository.retry.complete(testRoute);
+    await tester.pumpAndSettle();
   });
 
   testWidgets('route timeline marks a pedestrian transfer distinctly', (

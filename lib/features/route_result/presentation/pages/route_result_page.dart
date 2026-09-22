@@ -234,6 +234,42 @@ class _RouteContent extends StatelessWidget {
         _header(context, l10n),
         const SizedBox(height: 20),
         _filters(l10n),
+        if (controller.isRefreshingPreference) ...[
+          const SizedBox(height: 8),
+          const LinearProgressIndicator(
+            key: Key('route-preference-progress'),
+            minHeight: 3,
+            borderRadius: BorderRadius.all(Radius.circular(3)),
+          ),
+        ] else if (controller.preferenceError != null) ...[
+          const SizedBox(height: 8),
+          Semantics(
+            liveRegion: true,
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.error_outline_rounded,
+                  size: 18,
+                  color: AppColors.statusRed,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    l10n.routeLoadError,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.statusRed,
+                    ),
+                  ),
+                ),
+                TextButton(
+                  onPressed: controller.retryFailedPreference,
+                  child: Text(l10n.actionRetry),
+                ),
+              ],
+            ),
+          ),
+        ],
         const SizedBox(height: 16),
         _summary(l10n),
         if (controller.preference == RoutePreference.accessible) ...[
