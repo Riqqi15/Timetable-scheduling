@@ -2,6 +2,20 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:timetable/features/timetable/domain/entities/train_schedule.dart';
 import 'package:timetable/features/timetable/domain/services/schedule_status.dart';
 
+TrainSchedule schedule(String name, String departureTime, {int dayOffset = 0}) {
+  return TrainSchedule(
+    trainName: name,
+    route: 'Origin - Destination',
+    departureTime: departureTime,
+    arrivalTime: departureTime,
+    platform: '1',
+    trainType: 'KRL',
+    stationName: 'Origin',
+    isWeekend: false,
+    dayOffset: dayOffset,
+  );
+}
+
 void main() {
   const baseSchedule = TrainSchedule(
     trainName: 'KRL 1001',
@@ -103,6 +117,60 @@ void main() {
 
       expect(status.kind, ScheduleStatusKind.unavailable);
       expect(status.label, 'Status jadwal tidak tersedia');
+    });
+
+    test('orders upcoming nearest first and passed schedules newest first', () {
+      final source = [
+        schedule('Early', '04:00'),
+        schedule('Later', '18:30'),
+        schedule('Recently passed', '17:55'),
+        schedule('Nearest', '18:05'),
+        schedule('Unavailable', '--'),
+      ];
+
+      final ordered = ScheduleStatusCalculator.orderByRelevance(
+        schedules: source,
+        now: DateTime(2026, 9, 22, 18),
+      );
+
+      expect(ordered.map((item) => item.departureTime), [
+        '18:05',
+        '18:30',
+        '17:55',
+        '04:00',
+        '--',
+      ]);
+      expect(source.map((item) => item.departureTime), [
+        '04:00',
+        '18:30',
+        '17:55',
+        '18:05',
+        '--',
+      ]);
+    });
+
+    test('orders after-midnight dayOffset as an upcoming departure', () {
+      final ordered = ScheduleStatusCalculator.orderByRelevance(
+        schedules: [
+          schedule('Passed', '23:00'),
+          schedule('After midnight', '00:05', dayOffset: 1),
+        ],
+        now: DateTime(2026, 9, 22, 23, 59),
+      );
+
+      expect(ordered.map((item) => item.trainName), [
+        'After midnight',
+        'Passed',
+      ]);
+    });
+
+    test('keeps equal departure timestamps stable', () {
+      final ordered = ScheduleStatusCalculator.orderByRelevance(
+        schedules: [schedule('First', '18:05'), schedule('Second', '18:05')],
+        now: DateTime(2026, 9, 22, 18),
+      );
+
+      expect(ordered.map((item) => item.trainName), ['First', 'Second']);
     });
   });
 }

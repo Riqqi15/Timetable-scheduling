@@ -19,6 +19,37 @@ class ScheduleStatus {
 }
 
 abstract final class ScheduleStatusCalculator {
+  static List<TrainSchedule> orderByRelevance({
+    required Iterable<TrainSchedule> schedules,
+    required DateTime now,
+  }) {
+    final ranked = schedules.indexed.map((entry) {
+      final status = calculate(schedule: entry.$2, now: now);
+      return (
+        index: entry.$1,
+        schedule: entry.$2,
+        status: status,
+        rank: _orderRank(status.kind),
+      );
+    }).toList();
+
+    ranked.sort((left, right) {
+      if (left.rank != right.rank) return left.rank.compareTo(right.rank);
+
+      final leftDeparture = left.status.departureAt;
+      final rightDeparture = right.status.departureAt;
+      if (leftDeparture != null && rightDeparture != null) {
+        final timestampOrder = left.rank == 1
+            ? rightDeparture.compareTo(leftDeparture)
+            : leftDeparture.compareTo(rightDeparture);
+        if (timestampOrder != 0) return timestampOrder;
+      }
+      return left.index.compareTo(right.index);
+    });
+
+    return ranked.map((entry) => entry.schedule).toList(growable: false);
+  }
+
   static ScheduleStatus calculate({
     required TrainSchedule schedule,
     required DateTime now,
@@ -84,4 +115,12 @@ abstract final class ScheduleStatusCalculator {
     kind: ScheduleStatusKind.unavailable,
     departureAt: null,
   );
+
+  static int _orderRank(ScheduleStatusKind kind) => switch (kind) {
+    ScheduleStatusKind.upcoming ||
+    ScheduleStatusKind.soon ||
+    ScheduleStatusKind.now => 0,
+    ScheduleStatusKind.passed => 1,
+    ScheduleStatusKind.unavailable => 2,
+  };
 }

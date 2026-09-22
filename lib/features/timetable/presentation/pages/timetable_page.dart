@@ -11,10 +11,16 @@ import '../widgets/schedule_card.dart';
 import '../../../search_station/data/datasources/station_remote_data_source.dart';
 
 class TimetablePage extends StatefulWidget {
-  const TimetablePage({super.key, this.controller, this.stationDataSource});
+  const TimetablePage({
+    super.key,
+    this.controller,
+    this.stationDataSource,
+    this.now,
+  });
 
   final TimetableController? controller;
   final StationRemoteDataSource? stationDataSource;
+  final DateTime Function()? now;
 
   @override
   State<TimetablePage> createState() => _TimetablePageState();
@@ -63,14 +69,16 @@ class _TimetablePageState extends State<TimetablePage> {
   // Daftar Jenis Kereta
   final List<String> _trainTypes = const ['Semua', 'KRL', 'LRT', 'MRT'];
 
+  DateTime _currentTime() => widget.now?.call() ?? DateTime.now();
+
   @override
   void initState() {
     super.initState();
-    _now = DateTime.now();
+    _now = _currentTime();
     _loadSchedules();
     unawaited(_loadStationCatalog());
     _statusRefreshTimer = Timer.periodic(const Duration(seconds: 30), (_) {
-      if (mounted) setState(() => _now = DateTime.now());
+      if (mounted) setState(() => _now = _currentTime());
     });
   }
 
@@ -674,20 +682,23 @@ class _TimetablePageState extends State<TimetablePage> {
 
                   // Data state — apply text search filter client-side
                   final raw = snapshot.data ?? <TrainSchedule>[];
+                  final matchingSchedules = _searchQuery.isEmpty
+                      ? raw
+                      : raw.where((schedule) {
+                          final query = _searchQuery.toLowerCase();
+                          return schedule.trainName.toLowerCase().contains(
+                                query,
+                              ) ||
+                              schedule.route.toLowerCase().contains(query) ||
+                              schedule.stationName.toLowerCase().contains(
+                                query,
+                              );
+                        });
                   final filteredSchedules =
-                      (_searchQuery.isEmpty
-                            ? List<TrainSchedule>.of(raw)
-                            : raw.where((s) {
-                                final q = _searchQuery.toLowerCase();
-                                return s.trainName.toLowerCase().contains(q) ||
-                                    s.route.toLowerCase().contains(q) ||
-                                    s.stationName.toLowerCase().contains(q);
-                              }).toList())
-                        ..sort(
-                          (a, b) => a.dayOffset.compareTo(b.dayOffset) != 0
-                              ? a.dayOffset.compareTo(b.dayOffset)
-                              : a.departureTime.compareTo(b.departureTime),
-                        );
+                      ScheduleStatusCalculator.orderByRelevance(
+                        schedules: matchingSchedules,
+                        now: _now,
+                      );
 
                   if (filteredSchedules.isEmpty) {
                     return Center(

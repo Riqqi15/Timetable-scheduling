@@ -7,11 +7,27 @@ import 'package:timetable/features/search_station/data/datasources/station_remot
 import 'package:timetable/features/timetable/domain/entities/train_schedule.dart';
 import 'package:timetable/features/timetable/presentation/controllers/timetable_controller.dart';
 import 'package:timetable/features/timetable/presentation/pages/timetable_page.dart';
+import 'package:timetable/features/timetable/presentation/widgets/schedule_card.dart';
 import 'package:timetable/l10n/app_localizations.dart';
 import 'helpers/localized_test_app.dart';
 
+TrainSchedule _schedule(String name, String departureTime) => TrainSchedule(
+  trainName: name,
+  route: 'Origin - Destination',
+  departureTime: departureTime,
+  arrivalTime: departureTime,
+  platform: '1',
+  trainType: 'KRL',
+  stationName: 'Origin',
+  isWeekend: false,
+);
+
 class _Controller implements TimetableController {
+  _Controller([this.schedules = const []]);
+
+  final List<TrainSchedule> schedules;
   final List<String?> requested = [];
+
   @override
   Future<List<TrainSchedule>> loadSchedules({
     String? station,
@@ -19,7 +35,7 @@ class _Controller implements TimetableController {
     bool? isWeekend,
   }) async {
     requested.add(station);
-    return [];
+    return schedules;
   }
 }
 
@@ -118,4 +134,35 @@ void main() {
       await tester.pumpWidget(const SizedBox());
     },
   );
+
+  testWidgets('shows the nearest upcoming schedule first for phone time', (
+    tester,
+  ) async {
+    final controller = _Controller([
+      _schedule('Early', '04:00'),
+      _schedule('Later', '18:30'),
+      _schedule('Nearest', '18:05'),
+    ]);
+    final source = StationRemoteDataSource(
+      client: MockClient((_) async => http.Response('{"data":[]}', 200)),
+    );
+
+    await tester.pumpWidget(
+      localizedTestApp(
+        locale: const Locale('id'),
+        home: TimetablePage(
+          controller: controller,
+          stationDataSource: source,
+          now: () => DateTime(2026, 9, 22, 18),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final firstCard = tester.widget<ScheduleCard>(
+      find.byType(ScheduleCard).first,
+    );
+    expect(firstCard.schedule.trainName, 'Nearest');
+    await tester.pumpWidget(const SizedBox());
+  });
 }
