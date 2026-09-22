@@ -19,6 +19,7 @@ class StationLocatedMap extends StatefulWidget {
     this.fromStation,
     this.visibleLineIds,
     this.onStationSelected,
+    this.onNearestStationChanged,
     this.locationService = const UserLocationService(),
     this.stationLocations = krlStationLocations,
   });
@@ -28,6 +29,7 @@ class StationLocatedMap extends StatefulWidget {
   final String? fromStation;
   final Set<String>? visibleLineIds;
   final ValueChanged<String>? onStationSelected;
+  final ValueChanged<StationGeoPoint?>? onNearestStationChanged;
   final UserLocationService locationService;
   final List<StationGeoPoint> stationLocations;
 
@@ -44,6 +46,8 @@ class _StationLocatedMapState extends State<StationLocatedMap>
   int _focusRequest = 0;
   String? _focusStationId;
   bool _detailsOpen = false;
+  bool _hasPublishedNearestStation = false;
+  String? _publishedNearestStationId;
 
   @override
   void initState() {
@@ -64,6 +68,16 @@ class _StationLocatedMapState extends State<StationLocatedMap>
   }
 
   void _changed() {
+    final station = _tracker.nearby?.station;
+    final stationId = station?.schematicStationId;
+    if (!_hasPublishedNearestStation ||
+        stationId != _publishedNearestStationId) {
+      _hasPublishedNearestStation = true;
+      _publishedNearestStationId = stationId;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) widget.onNearestStationChanged?.call(station);
+      });
+    }
     if (mounted) setState(() {});
   }
 

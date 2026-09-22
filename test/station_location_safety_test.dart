@@ -305,6 +305,37 @@ void main() {
     },
   );
 
+  testWidgets('map publishes only verified nearest-station changes', (
+    tester,
+  ) async {
+    final gateway = FakeTrackingLocation();
+    final published = <StationGeoPoint?>[];
+    await tester.pumpWidget(
+      localizedTestApp(
+        home: Scaffold(
+          body: StationLocatedMap(
+            locationService: UserLocationService(gateway: gateway),
+            onNearestStationChanged: published.add,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    gateway.positions.add(fix(manggarai, timestamp: DateTime.now()));
+    await tester.pumpAndSettle();
+    expect(published.last?.name, 'Manggarai');
+
+    gateway.positions.add(
+      fix(manggarai, accuracy: 500, timestamp: DateTime.now()),
+    );
+    await tester.pumpAndSettle();
+    expect(published.last, isNull);
+
+    await tester.pumpWidget(const SizedBox());
+    await gateway.dispose();
+  });
+
   testWidgets('compact map and large text keep status usable in all locales', (
     tester,
   ) async {
