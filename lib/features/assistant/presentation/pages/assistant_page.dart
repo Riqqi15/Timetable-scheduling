@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/localization/app_language_tag.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../shared/widgets/app_notice.dart';
 import '../../../../shared/widgets/bottom_nav_bar.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../travel_alarm/presentation/controllers/travel_alarm_controller.dart';
@@ -186,11 +187,12 @@ class _AssistantPageState extends State<AssistantPage>
   void _cancelAlarms() {
     if (!_alarmController.state.hasAnyAlarm) return;
     _alarmController.cancelAllAlarms();
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.alarmDeactivated)),
-      );
+    AppNotice.show(
+      context,
+      message: AppLocalizations.of(context)!.alarmDeactivated,
+      type: AppNoticeType.success,
+      placement: AppNoticePlacement.top,
+    );
   }
 
   VoidCallback? get _voiceAction {

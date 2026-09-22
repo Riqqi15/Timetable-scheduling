@@ -4,6 +4,7 @@ import '../../../../core/localization/app_locale.dart';
 import '../../../../core/localization/locale_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../shared/widgets/app_notice.dart';
 import '../../../auth/presentation/widgets/auth_scope.dart';
 import '../models/app_locale_presentation.dart';
 import '../widgets/profile_detail_scaffold.dart';
@@ -29,17 +30,14 @@ class _LanguagePageState extends State<LanguagePage> {
     await WidgetsBinding.instance.endOfFrame;
     if (!mounted) return;
     final l10n = AppLocalizations.of(context)!;
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text(
-            saved
-                ? l10n.languageAppliedSnackbar
-                : l10n.languageSaveFailedSnackbar,
-          ),
-        ),
-      );
+    AppNotice.show(
+      context,
+      message: saved
+          ? l10n.languageAppliedSnackbar
+          : l10n.languageSaveFailedSnackbar,
+      type: saved ? AppNoticeType.success : AppNoticeType.error,
+      placement: saved ? AppNoticePlacement.top : AppNoticePlacement.bottom,
+    );
   }
 
   @override

@@ -22,6 +22,7 @@ import 'features/tickets/domain/repositories/device_ticket_store.dart';
 import 'features/tickets/presentation/controllers/ticket_controller.dart';
 import 'features/tickets/presentation/widgets/ticket_scope.dart';
 import 'l10n/app_localizations.dart';
+import 'shared/widgets/app_notice.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -59,8 +60,6 @@ class _MyAppState extends State<MyApp> {
   late final TicketController _ticketController;
   late final LocaleController _localeController;
   late final bool _ownsLocaleController;
-  final GlobalKey<ScaffoldMessengerState> _scaffoldMessengerKey = GlobalKey();
-
   @override
   void initState() {
     super.initState();
@@ -84,11 +83,13 @@ class _MyAppState extends State<MyApp> {
     final reminder = _travelAlarmController.reminder.value;
     if (reminder == null) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final messenger = _scaffoldMessengerKey.currentState;
-      if (messenger == null) return;
-      messenger
-        ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(reminder.message)));
+      final context = appRouter.routerDelegate.navigatorKey.currentContext;
+      if (context == null) return;
+      AppNotice.show(
+        context,
+        message: reminder.message,
+        type: AppNoticeType.warning,
+      );
     });
   }
 
@@ -126,7 +127,6 @@ class _MyAppState extends State<MyApp> {
               valueListenable: _localeController,
               builder: (context, appLocale, child) {
                 return MaterialApp.router(
-                  scaffoldMessengerKey: _scaffoldMessengerKey,
                   title: 'KAI Access Prototype',
                   debugShowCheckedModeBanner: false,
                   theme: AppTheme.lightTheme,

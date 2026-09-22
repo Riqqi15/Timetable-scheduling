@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../shared/widgets/app_notice.dart';
 
 class HelpSectionHeading extends StatelessWidget {
   final String title;
@@ -316,7 +317,5 @@ class HelpPrimaryButton extends StatelessWidget {
 }
 
 void showHelpMessage(BuildContext context, String message) {
-  ScaffoldMessenger.of(context)
-    ..hideCurrentSnackBar()
-    ..showSnackBar(SnackBar(content: Text(message)));
+  AppNotice.show(context, message: message);
 }

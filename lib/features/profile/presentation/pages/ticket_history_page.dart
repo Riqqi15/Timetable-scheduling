@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../shared/widgets/app_notice.dart';
 import '../widgets/profile_detail_scaffold.dart';
 
 enum _TicketFilter { all, active, completed }
@@ -28,9 +29,12 @@ class _TicketHistoryPageState extends State<TicketHistoryPage> {
   void _clearHistory() {
     final l10n = AppLocalizations.of(context)!;
     setState(() => _showHistory = false);
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(l10n.historyCleared)));
+    AppNotice.show(
+      context,
+      message: l10n.historyCleared,
+      type: AppNoticeType.success,
+      placement: AppNoticePlacement.top,
+    );
   }
 
   @override

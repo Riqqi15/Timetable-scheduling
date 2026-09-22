@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../shared/widgets/app_notice.dart';
 import '../../../../shared/widgets/bottom_nav_bar.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../widgets/station_located_map.dart';
@@ -426,8 +427,9 @@ class _HomePageState extends State<HomePage> {
                       style: TextStyle(color: AppColors.textHint),
                     ),
                     onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(l10n.filterAreaComingSoon)),
+                      AppNotice.show(
+                        context,
+                        message: l10n.filterAreaComingSoon,
                       );
                     },
                   ),
@@ -438,8 +440,9 @@ class _HomePageState extends State<HomePage> {
                       style: TextStyle(color: AppColors.textHint),
                     ),
                     onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(l10n.filterAreaComingSoon)),
+                      AppNotice.show(
+                        context,
+                        message: l10n.filterAreaComingSoon,
                       );
                     },
                   ),
@@ -450,8 +453,9 @@ class _HomePageState extends State<HomePage> {
                       style: TextStyle(color: AppColors.textHint),
                     ),
                     onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(l10n.filterAreaComingSoon)),
+                      AppNotice.show(
+                        context,
+                        message: l10n.filterAreaComingSoon,
                       );
                     },
                   ),
@@ -462,8 +466,9 @@ class _HomePageState extends State<HomePage> {
                       style: TextStyle(color: AppColors.textHint),
                     ),
                     onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(l10n.filterAreaComingSoon)),
+                      AppNotice.show(
+                        context,
+                        message: l10n.filterAreaComingSoon,
                       );
                     },
                   ),
@@ -474,8 +479,9 @@ class _HomePageState extends State<HomePage> {
                       style: TextStyle(color: AppColors.textHint),
                     ),
                     onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(l10n.filterAreaComingSoon)),
+                      AppNotice.show(
+                        context,
+                        message: l10n.filterAreaComingSoon,
                       );
                     },
                   ),
@@ -486,8 +492,9 @@ class _HomePageState extends State<HomePage> {
                       style: TextStyle(color: AppColors.textHint),
                     ),
                     onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(l10n.filterAreaComingSoon)),
+                      AppNotice.show(
+                        context,
+                        message: l10n.filterAreaComingSoon,
                       );
                     },
                   ),
@@ -1060,14 +1067,11 @@ class _HomePageState extends State<HomePage> {
                                                     ).toString(),
                                                   );
                                                 } else {
-                                                  ScaffoldMessenger.of(
+                                                  AppNotice.show(
                                                     context,
-                                                  ).showSnackBar(
-                                                    SnackBar(
-                                                      content: Text(
+                                                    message:
                                                         l10n.selectFromFirst,
-                                                      ),
-                                                    ),
+                                                    type: AppNoticeType.warning,
                                                   );
                                                 }
                                               },
@@ -1890,15 +1894,11 @@ class _StationCustomerServiceSection extends StatelessWidget {
                   Expanded(
                     child: ElevatedButton.icon(
                       onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              AppLocalizations.of(
-                                context,
-                              )!.homeCallCSSnackbar(stationName),
-                            ),
-                            behavior: SnackBarBehavior.floating,
-                          ),
+                        AppNotice.show(
+                          context,
+                          message: AppLocalizations.of(
+                            context,
+                          )!.homeCallCSSnackbar(stationName),
                         );
                       },
                       icon: const Icon(Icons.phone_rounded, size: 16),
@@ -1923,16 +1923,11 @@ class _StationCustomerServiceSection extends StatelessWidget {
                   Expanded(
                     child: OutlinedButton.icon(
                       onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              AppLocalizations.of(
-                                context,
-                              )!.homeAskHelpSnackbar(stationName),
-                            ),
-                            backgroundColor: AppColors.statusGreen,
-                            behavior: SnackBarBehavior.floating,
-                          ),
+                        AppNotice.show(
+                          context,
+                          message: AppLocalizations.of(
+                            context,
+                          )!.homeAskHelpSnackbar(stationName),
                         );
                       },
                       icon: const Icon(Icons.accessible_rounded, size: 16),

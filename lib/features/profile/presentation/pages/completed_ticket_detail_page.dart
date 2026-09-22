@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../shared/widgets/app_notice.dart';
 import '../widgets/profile_detail_scaffold.dart';
 
 /// Detail perjalanan yang telah selesai dan tersimpan di riwayat perangkat.
@@ -11,9 +12,12 @@ class CompletedTicketDetailPage extends StatelessWidget {
 
   void _downloadReceipt(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(l10n.completedTicketReceiptReady)));
+    AppNotice.show(
+      context,
+      message: l10n.completedTicketReceiptReady,
+      type: AppNoticeType.success,
+      placement: AppNoticePlacement.top,
+    );
   }
 
   @override

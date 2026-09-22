@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../shared/widgets/app_notice.dart';
 import '../../../../shared/widgets/bottom_nav_bar.dart';
 import '../../../auth/presentation/widgets/auth_scope.dart';
 import '../../../travel_alarm/presentation/controllers/travel_alarm_controller.dart';
@@ -188,14 +189,17 @@ class _TicketsPageState extends State<TicketsPage> with WidgetsBindingObserver {
   Future<void> _openCheckout() async {
     final uri = controller.state.payment?.checkoutUrl;
     if (uri == null) {
-      _message('Tautan pembayaran belum tersedia.');
+      _message('Tautan pembayaran belum tersedia.', type: AppNoticeType.error);
       return;
     }
     final opened =
         await (widget.checkoutLauncher?.call(uri) ??
             launchUrl(uri, mode: LaunchMode.externalApplication));
     if (!opened && mounted) {
-      _message('Halaman pembayaran tidak dapat dibuka.');
+      _message(
+        'Halaman pembayaran tidak dapat dibuka.',
+        type: AppNoticeType.error,
+      );
     }
   }
 
@@ -219,13 +223,19 @@ class _TicketsPageState extends State<TicketsPage> with WidgetsBindingObserver {
       departure: selection.departure,
       destination: selection.destination,
     );
-    _message(AppLocalizations.of(context)!.alarmActivated);
+    _message(
+      AppLocalizations.of(context)!.alarmActivated,
+      type: AppNoticeType.success,
+      placement: AppNoticePlacement.top,
+    );
   }
 
-  void _message(String message) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
+  void _message(
+    String message, {
+    AppNoticeType type = AppNoticeType.info,
+    AppNoticePlacement placement = AppNoticePlacement.bottom,
+  }) {
+    AppNotice.show(context, message: message, type: type, placement: placement);
   }
 
   @override

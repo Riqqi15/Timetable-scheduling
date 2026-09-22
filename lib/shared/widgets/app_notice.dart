@@ -25,28 +25,30 @@ abstract final class AppNotice {
       ..removeCurrentSnackBar();
 
     final resolvedDuration = duration ?? _durationFor(type);
-    final content = _AppNoticeCard(message: trimmedMessage, type: type);
-
     if (placement == AppNoticePlacement.top) {
-      final controller = messenger.showMaterialBanner(
+      messenger.showMaterialBanner(
         MaterialBanner(
           backgroundColor: Colors.transparent,
           surfaceTintColor: Colors.transparent,
           elevation: 0,
           dividerColor: Colors.transparent,
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-          content: content,
+          content: _AutoDismissNoticeCard(
+            message: trimmedMessage,
+            type: type,
+            duration: resolvedDuration,
+            onDismiss: messenger.hideCurrentMaterialBanner,
+          ),
           actions: const [SizedBox.shrink()],
         ),
       );
-      unawaited(Future<void>.delayed(resolvedDuration, controller.close));
       return;
     }
 
     final bottomInset = MediaQuery.maybeViewPaddingOf(context)?.bottom ?? 0;
     messenger.showSnackBar(
       SnackBar(
-        content: content,
+        content: _AppNoticeCard(message: trimmedMessage, type: type),
         duration: resolvedDuration,
         behavior: SnackBarBehavior.floating,
         backgroundColor: Colors.transparent,
@@ -63,6 +65,45 @@ abstract final class AppNotice {
     AppNoticeType.warning => const Duration(seconds: 5),
     AppNoticeType.error => const Duration(seconds: 6),
   };
+}
+
+class _AutoDismissNoticeCard extends StatefulWidget {
+  const _AutoDismissNoticeCard({
+    required this.message,
+    required this.type,
+    required this.duration,
+    required this.onDismiss,
+  });
+
+  final String message;
+  final AppNoticeType type;
+  final Duration duration;
+  final VoidCallback onDismiss;
+
+  @override
+  State<_AutoDismissNoticeCard> createState() =>
+      _AutoDismissNoticeCardState();
+}
+
+class _AutoDismissNoticeCardState extends State<_AutoDismissNoticeCard> {
+  late final Timer _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer(widget.duration, widget.onDismiss);
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _AppNoticeCard(message: widget.message, type: widget.type);
+  }
 }
 
 class _AppNoticeCard extends StatelessWidget {

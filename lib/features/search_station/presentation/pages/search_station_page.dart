@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../shared/widgets/app_notice.dart';
 import '../../../../shared/widgets/bottom_nav_bar.dart';
 import '../../../route_result/data/services/native_route_speech_service.dart';
 import '../../data/datasources/station_remote_data_source.dart';
@@ -58,10 +59,10 @@ class _SearchStationPageState extends State<SearchStationPage> {
       );
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(AppLocalizations.of(context)!.stationVoiceGuideError),
-          ),
+        AppNotice.show(
+          context,
+          message: AppLocalizations.of(context)!.stationVoiceGuideError,
+          type: AppNoticeType.error,
         );
       }
     } finally {
