@@ -14,6 +14,9 @@ Map<String, dynamic> _schedule(String id) => {
   'trainType': 'KRL',
   'isWeekend': false,
   'dayOffset': 1,
+  'nextStation': 'Cikini',
+  'destination': 'Jakarta Kota',
+  'direction': 'NORTHBOUND',
   'station': {'name': 'Jurangmangu'},
 };
 
@@ -54,6 +57,9 @@ void main() {
       expect(requested, [1, 2]);
       expect(schedules.length, 3);
       expect(schedules.last.dayOffset, 1);
+      expect(schedules.first.nextStation, 'Cikini');
+      expect(schedules.first.destination, 'Jakarta Kota');
+      expect(schedules.first.direction, 'NORTHBOUND');
     },
   );
 
