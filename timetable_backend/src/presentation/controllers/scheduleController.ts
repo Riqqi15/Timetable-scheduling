@@ -9,6 +9,7 @@ import {
 import { resolvePlatformRule } from '../../domain/services/platformRuleService';
 import { beginTiming, measurePhase } from '../../infrastructure/observability/requestTiming';
 import { RouteService } from '../../domain/services/routeService';
+import { resolveScheduleDirection } from '../../domain/services/scheduleDirection';
 
 const querySchema = z.object({
   stationId: z.string().uuid().optional(),
@@ -124,6 +125,7 @@ export const getSchedules = async (req: Request, res: Response, next: NextFuncti
                   where: { arrivalMinute: { not: null } },
                   orderBy: { sequence: 'asc' },
                   select: {
+                    sequence: true,
                     arrivalMinute: true,
                     station: { select: { name: true, officialName: true } },
                   },
@@ -139,11 +141,18 @@ export const getSchedules = async (req: Request, res: Response, next: NextFuncti
       ]));
       res.json({
         success: true,
-        data: await measurePhase('schedule_format', () => Promise.all(departures.map(async ({ id: stopId, service, departureMinute }) => {
+        data: await measurePhase('schedule_format', () => Promise.all(departures.map(async ({ id: stopId, sequence, service, departureMinute }) => {
           const first = service.stops[0];
           const last = service.stops.at(-1);
           const display = (value: typeof first | undefined) => value?.station.officialName ?? value?.station.name ?? '';
-          const destination = display(last);
+          const directionInfo = resolveScheduleDirection(
+            sequence,
+            service.stops.map((stop) => ({
+              sequence: stop.sequence,
+              stationName: display(stop),
+            })),
+          );
+          const destination = directionInfo?.destination ?? display(last);
           const platformRule = await resolvePlatformRule(prisma, {
             stationId: timetableStation.id,
             lineSlug: service.lineSlug,
@@ -161,6 +170,9 @@ export const getSchedules = async (req: Request, res: Response, next: NextFuncti
             dayOffset: Math.floor((departureMinute ?? 0) / 1440),
             platform: platformRule?.platform ?? '',
             trainType: 'KRL',
+            nextStation: directionInfo?.nextStation ?? null,
+            destination,
+            direction: service.direction,
             isWeekend: isWeekend === 'true',
             calendarCode: service.calendar.code,
             lineSlug: service.lineSlug,
