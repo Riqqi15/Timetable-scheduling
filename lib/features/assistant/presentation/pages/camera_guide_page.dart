@@ -7,6 +7,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../controllers/camera_guide_controller.dart';
 import '../models/camera_guide_copy.dart';
+import '../widgets/camera_preview_frame.dart';
 
 class CameraGuidePage extends StatefulWidget {
   const CameraGuidePage({
@@ -74,21 +75,36 @@ class _CameraGuidePageState extends State<CameraGuidePage> {
   @override
   Widget build(BuildContext context) => Scaffold(
     backgroundColor: Colors.black,
-    body: Stack(
-      fit: StackFit.expand,
-      children: [
-        if (_controller.camera?.value.isInitialized ?? false)
-          CameraPreview(_controller.camera!)
-        else
-          const ColoredBox(color: Colors.black),
-        SafeArea(
-          child: Column(
-            children: [_header(context), const Spacer(), _statusPanel()],
+    body: SafeArea(
+      child: Column(
+        children: [
+          _header(context),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+              child: _preview(context),
+            ),
           ),
-        ),
-      ],
+          _statusPanel(),
+        ],
+      ),
     ),
   );
+
+  Widget _preview(BuildContext context) {
+    final camera = _controller.camera;
+    final previewSize = camera?.value.previewSize;
+    if (camera == null ||
+        !camera.value.isInitialized ||
+        previewSize == null) {
+      return const ColoredBox(color: Colors.black);
+    }
+    return CameraPreviewFrame(
+      previewSize: previewSize,
+      orientation: MediaQuery.orientationOf(context),
+      child: CameraPreview(camera),
+    );
+  }
 
   Widget _header(BuildContext context) => Padding(
     padding: const EdgeInsets.fromLTRB(8, 8, 16, 0),

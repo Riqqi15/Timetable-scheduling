@@ -10,6 +10,7 @@ import 'package:google_mlkit_object_detection/google_mlkit_object_detection.dart
 
 import '../../data/datasources/vision_guide_remote_data_source.dart';
 import '../models/camera_guide_copy.dart';
+import '../utils/camera_frame_rotation.dart';
 import '../utils/nv21_jpeg_encoder.dart';
 
 enum CameraGuideState {
@@ -176,7 +177,13 @@ class CameraGuideController extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   void _sendRemoteVisionIfDue(CameraImage image, {required int sessionId}) {
-    if (!Platform.isAndroid || _visionBusy || image.planes.length != 1) return;
+    final controller = _camera;
+    if (!Platform.isAndroid ||
+        _visionBusy ||
+        image.planes.length != 1 ||
+        controller == null) {
+      return;
+    }
     final now = DateTime.now();
     if (_lastVisionRequest != null &&
         now.difference(_lastVisionRequest!) < const Duration(seconds: 8)) {
@@ -191,7 +198,7 @@ class CameraGuideController extends ChangeNotifier with WidgetsBindingObserver {
         Uint8List.fromList(bytes),
         width: image.width,
         height: image.height,
-        rotationDegrees: _camera?.description.sensorOrientation ?? 0,
+        rotationDegrees: _frameRotationDegrees(controller),
         sessionId: sessionId,
       ),
     );
@@ -232,7 +239,7 @@ class CameraGuideController extends ChangeNotifier with WidgetsBindingObserver {
     final controller = _camera;
     if (controller == null) return null;
     final rotation = InputImageRotationValue.fromRawValue(
-      controller.description.sensorOrientation,
+      _frameRotationDegrees(controller),
     );
     final format = InputImageFormatValue.fromRawValue(image.format.raw);
     if (rotation == null || format == null || image.planes.length != 1) {
@@ -247,6 +254,14 @@ class CameraGuideController extends ChangeNotifier with WidgetsBindingObserver {
         format: format,
         bytesPerRow: plane.bytesPerRow,
       ),
+    );
+  }
+
+  int _frameRotationDegrees(CameraController controller) {
+    return cameraFrameRotationDegrees(
+      sensorOrientation: controller.description.sensorOrientation,
+      deviceOrientation: controller.value.deviceOrientation,
+      lensDirection: controller.description.lensDirection,
     );
   }
 
