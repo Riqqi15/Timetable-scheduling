@@ -252,7 +252,7 @@ void main() {
       expect(find.text('Kamu di sini · Dekat Stasiun Manggarai'), findsNothing);
       expect(
         tester.widget<MapView>(find.byType(MapView)).nearestStationLabel,
-        'Kamu di sini',
+        'Lokasi kamu',
       );
       final viewer = tester.widget<InteractiveViewer>(
         find.byType(InteractiveViewer),
