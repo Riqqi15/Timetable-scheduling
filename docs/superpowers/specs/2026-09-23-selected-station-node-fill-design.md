@@ -17,7 +17,7 @@ Make the selected station immediately recognizable without the current target-li
 
 ### Origin station
 
-- Use the same filled treatment with `AppColors.primaryBlue` instead of purple.
+- Use the same filled treatment with `AppColors.kaiBlue` instead of purple. `AppColors.primaryBlue` is intentionally not used because it is currently a compatibility alias for purple.
 - Render its code in white and retain the thin white keyline.
 - If a station is both the origin and the currently selected station, the selected purple state takes precedence.
 
@@ -37,7 +37,7 @@ Make the selected station immediately recognizable without the current target-li
 
 - Replace the blue ring and solid-blue label with a compact white callout.
 - Use Flutter's `Icons.location_on_outlined`, followed by the localized label: `Lokasi kamu` (Indonesian), `Your location` (English), `你的位置` (Simplified Chinese), and `موقعك` (Arabic).
-- Draw the icon and text in `AppColors.primaryBlue`.
+- Draw the icon and text in `AppColors.kaiBlue`.
 - Use a 1.5 px blue border at 46% opacity, a 10 px corner radius, and a shadow with 3 px elevation at 12% opacity.
 - Add a small white pointer with the same blue border to anchor the callout to the station; do not draw a separate connector line or any ring around the node.
 - Center the callout above a regular node or transit pill using the existing nearest-station geometry. Preserve the existing clearance calculations for station-code badges.

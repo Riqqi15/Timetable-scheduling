@@ -1717,12 +1717,14 @@ const Map<String, LabelPos> _majorCodeBadgePos = {
 
 TextPainter _buildMajorHubTextPainter(
   StationData station, {
+  bool isSelected = false,
   bool isFrom = false,
 }) {
+  final stateColor = _stationStateColor(isSelected: isSelected, isFrom: isFrom);
   final nameSpan = TextSpan(
     text: station.name,
     style: TextStyle(
-      color: isFrom ? AppColors.primaryBlue : AppColors.textPrimary,
+      color: stateColor ?? AppColors.textPrimary,
       fontSize: kHubStationNameFontSize,
       fontWeight: FontWeight.w800,
     ),
@@ -1745,18 +1747,32 @@ String _mergedStationName(StationData primary, StationData secondary) =>
 
 TextPainter _buildMergedHubTextPainter(
   StationData primary,
-  StationData secondary,
-) => TextPainter(
+  StationData secondary, {
+  bool isSelected = false,
+  bool isFrom = false,
+}) => TextPainter(
   text: TextSpan(
     text: _mergedStationName(primary, secondary),
-    style: const TextStyle(
-      color: AppColors.textPrimary,
+    style: TextStyle(
+      color:
+          _stationStateColor(isSelected: isSelected, isFrom: isFrom) ??
+          AppColors.textPrimary,
       fontSize: kHubStationNameFontSize,
       fontWeight: FontWeight.w800,
     ),
   ),
   textDirection: TextDirection.ltr,
 )..layout();
+
+Color? _stationStateColor({required bool isSelected, required bool isFrom}) =>
+    isSelected
+    ? AppColors.primaryPurple
+    : isFrom
+    ? AppColors.kaiBlue
+    : null;
+
+Color _stationStateSurface(Color color) =>
+    Color.alphaBlend(color.withValues(alpha: 0.10), Colors.white);
 
 Rect mergedStationHubRect(StationData primary, StationData secondary) {
   final center = Offset(
@@ -1806,13 +1822,12 @@ class SchematicMapPainter extends CustomPainter {
     _drawLandmarks(canvas);
     // 4. Draw station nodes (dots, code badges)
     _drawStations(canvas);
-    // 5. Draw the nearest-station marker as a separate overlay
-    _drawNearestStationMarker(canvas);
-    // 6. Draw station labels
+    // 5. Draw station labels
     _drawAllLabels(canvas);
-    // 7. Draw line route identity badges
+    // 6. Draw line route identity badges
     _drawLineBadges(canvas);
-    _drawNearestStationLabel(canvas);
+    // 7. Draw the current-location callout above map content
+    _drawNearestStationLabel(canvas, size);
   }
 
   ({RRect node, double labelTop})? _nearestStationGeometry() {
@@ -1857,14 +1872,13 @@ class SchematicMapPainter extends CustomPainter {
         labelTop: top - 12,
       );
     }
-    final isEmphasized =
-        selectedStation == station.id ||
-        selectedStation == station.name ||
-        fromStation == station.id ||
-        fromStation == station.name;
-    final radius = isEmphasized
-        ? max(stationNodeRadius(station), station.code.isEmpty ? 10.0 : 13.0)
-        : stationNodeRadius(station);
+    final isSelected =
+        selectedStation == station.id || selectedStation == station.name;
+    final isFrom = fromStation == station.id || fromStation == station.name;
+    final isEmphasized = isSelected || isFrom;
+    final radius =
+        stationNodeRadius(station) * (isEmphasized ? 1.12 : 1) +
+        (isEmphasized ? 2 : 0);
     final rect = Rect.fromCircle(center: station.position, radius: radius);
     return (
       node: RRect.fromRectAndRadius(rect, Radius.circular(radius)),
@@ -1872,45 +1886,108 @@ class SchematicMapPainter extends CustomPainter {
     );
   }
 
-  void _drawNearestStationMarker(Canvas canvas) {
-    final geometry = _nearestStationGeometry();
-    if (geometry == null) return;
-    // Outline the actual node; never paint over its station name/code.
-    canvas.drawRRect(
-      geometry.node.inflate(4),
-      Paint()
-        ..color = const Color(0xFF1976D2)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 5,
-    );
-  }
-
-  void _drawNearestStationLabel(Canvas canvas) {
+  void _drawNearestStationLabel(Canvas canvas, Size size) {
     final geometry = _nearestStationGeometry();
     if (geometry == null || nearestStationLabel == null) return;
+    const locationColor = AppColors.kaiBlue;
     final center = geometry.node.outerRect.center;
     final text = TextPainter(
       text: TextSpan(
         text: nearestStationLabel,
         style: const TextStyle(
-          color: Colors.white,
-          fontSize: 18,
+          color: locationColor,
+          fontSize: 14,
           fontWeight: FontWeight.w800,
         ),
       ),
       textDirection: locationTextDirection,
     )..layout();
+    const icon = Icons.location_on_outlined;
+    final iconText = TextPainter(
+      text: TextSpan(
+        text: String.fromCharCode(icon.codePoint),
+        style: TextStyle(
+          color: locationColor,
+          fontSize: 17,
+          fontFamily: icon.fontFamily,
+          package: icon.fontPackage,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    const horizontalPadding = 11.0;
+    const verticalPadding = 7.0;
+    const contentGap = 6.0;
+    const pointerHeight = 7.0;
+    final contentWidth = iconText.width + contentGap + text.width;
+    final width = contentWidth + horizontalPadding * 2;
+    final height = max(iconText.height, text.height) + verticalPadding * 2;
+    final maxLeft = max(0.0, size.width - width);
+    final left = (center.dx - width / 2).clamp(0.0, maxLeft).toDouble();
+    final pointerTipY = geometry.labelTop - 4;
     final rect = Rect.fromLTWH(
-      center.dx - text.width / 2 - 12,
-      geometry.labelTop - text.height - 16,
-      text.width + 24,
-      text.height + 16,
+      left,
+      pointerTipY - pointerHeight - height,
+      width,
+      height,
     );
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(rect, const Radius.circular(8)),
-      Paint()..color = const Color(0xFF1976D2),
+    final rrect = RRect.fromRectAndRadius(rect, const Radius.circular(10));
+    final pointerX = center.dx
+        .clamp(rect.left + 14, rect.right - 14)
+        .toDouble();
+    final pointerFill = Path()
+      ..moveTo(pointerX - 7, rect.bottom - 1)
+      ..lineTo(pointerX, pointerTipY)
+      ..lineTo(pointerX + 7, rect.bottom - 1)
+      ..close();
+    final shadowPath = Path()
+      ..addRRect(rrect)
+      ..addPath(pointerFill, Offset.zero);
+    canvas.drawShadow(
+      shadowPath,
+      Colors.black.withValues(alpha: 0.12),
+      3,
+      false,
     );
-    text.paint(canvas, rect.topLeft + const Offset(12, 8));
+    canvas.drawPath(pointerFill, Paint()..color = Colors.white);
+    canvas.drawRRect(rrect, Paint()..color = Colors.white);
+    final borderPaint = Paint()
+      ..color = locationColor.withValues(alpha: 0.46)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5;
+    canvas.drawPath(
+      Path()
+        ..moveTo(pointerX - 7, rect.bottom - 1)
+        ..lineTo(pointerX, pointerTipY)
+        ..lineTo(pointerX + 7, rect.bottom - 1),
+      borderPaint,
+    );
+    canvas.drawRRect(rrect, borderPaint);
+
+    final contentLeft = rect.left + horizontalPadding;
+    final contentTop = rect.center.dy;
+    if (locationTextDirection == TextDirection.rtl) {
+      text.paint(canvas, Offset(contentLeft, contentTop - text.height / 2));
+      iconText.paint(
+        canvas,
+        Offset(
+          contentLeft + text.width + contentGap,
+          contentTop - iconText.height / 2,
+        ),
+      );
+    } else {
+      iconText.paint(
+        canvas,
+        Offset(contentLeft, contentTop - iconText.height / 2),
+      );
+      text.paint(
+        canvas,
+        Offset(
+          contentLeft + iconText.width + contentGap,
+          contentTop - text.height / 2,
+        ),
+      );
+    }
   }
 
   // ── DRAW LINES ──────────────────────────────────────────────────
@@ -2211,38 +2288,6 @@ class SchematicMapPainter extends CustomPainter {
     }
   }
 
-  void _drawSelectionHalo(
-    Canvas canvas,
-    Offset center, {
-    required bool isSelected,
-    required bool isFrom,
-    required double radius,
-  }) {
-    if (!isSelected && !isFrom) return;
-    final color = isSelected ? AppColors.primaryPurple : AppColors.primaryBlue;
-    canvas.drawCircle(
-      center,
-      radius + 7,
-      Paint()..color = color.withValues(alpha: 0.16),
-    );
-    canvas.drawCircle(
-      center,
-      radius + 3,
-      Paint()
-        ..color = Colors.white
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 3,
-    );
-    canvas.drawCircle(
-      center,
-      radius + 5,
-      Paint()
-        ..color = color
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.5,
-    );
-  }
-
   /// Gambar node gabungan:
   /// Rounded rect pill dengan nama stasiun di tengah, badge secondary kiri/bawah & primary kanan/atas
   void _drawMergedNode(
@@ -2266,30 +2311,34 @@ class SchematicMapPainter extends CustomPainter {
         fromStation == primaryStation.name ||
         fromStation == secondaryStation.name;
 
-    final nameTp = _buildMergedHubTextPainter(primaryStation, secondaryStation);
+    final stateColor = _stationStateColor(
+      isSelected: isSelected,
+      isFrom: isFrom,
+    );
+    final nameTp = _buildMergedHubTextPainter(
+      primaryStation,
+      secondaryStation,
+      isSelected: isSelected,
+      isFrom: isFrom,
+    );
     final hubRect = mergedStationHubRect(primaryStation, secondaryStation);
     final rrect = RRect.fromRectAndRadius(hubRect, const Radius.circular(12));
 
-    _drawSelectionHalo(
-      canvas,
-      center,
-      isSelected: isSelected,
-      isFrom: isFrom,
-      radius: 24,
+    canvas.drawRRect(
+      rrect,
+      Paint()
+        ..color = stateColor == null
+            ? Colors.white
+            : _stationStateSurface(stateColor),
     );
-
-    // White fill
-    canvas.drawRRect(rrect, Paint()..color = Colors.white);
 
     // Border
     canvas.drawRRect(
       rrect,
       Paint()
-        ..color = isSelected || isFrom
-            ? AppColors.primaryBlue
-            : AppColors.textPrimary
+        ..color = stateColor ?? AppColors.textPrimary
         ..style = PaintingStyle.stroke
-        ..strokeWidth = isSelected ? 3 : 2.5,
+        ..strokeWidth = stateColor == null ? 2.5 : 3,
     );
 
     // Nama stasiun di tengah
@@ -2464,15 +2513,16 @@ class SchematicMapPainter extends CustomPainter {
     bool isSelected = false,
     bool isFrom = false,
   }) {
-    _drawSelectionHalo(
-      canvas,
-      station.position,
+    final stateColor = _stationStateColor(
       isSelected: isSelected,
       isFrom: isFrom,
-      radius: 30,
     );
 
-    final nameTp = _buildMajorHubTextPainter(station, isFrom: isFrom);
+    final nameTp = _buildMajorHubTextPainter(
+      station,
+      isSelected: isSelected,
+      isFrom: isFrom,
+    );
     final hubRect = Rect.fromCenter(
       center: station.position,
       width: nameTp.width + 18,
@@ -2481,19 +2531,21 @@ class SchematicMapPainter extends CustomPainter {
 
     final rect = RRect.fromRectAndRadius(hubRect, const Radius.circular(12));
 
-    // White fill
-    canvas.drawRRect(rect, Paint()..color = Colors.white);
-
-    // Border
-    final borderColor = isSelected || isFrom
-        ? AppColors.primaryBlue
-        : AppColors.textPrimary;
     canvas.drawRRect(
       rect,
       Paint()
-        ..color = borderColor
+        ..color = stateColor == null
+            ? Colors.white
+            : _stationStateSurface(stateColor),
+    );
+
+    // Border
+    canvas.drawRRect(
+      rect,
+      Paint()
+        ..color = stateColor ?? AppColors.textPrimary
         ..style = PaintingStyle.stroke
-        ..strokeWidth = isSelected ? 3.0 : 2.5,
+        ..strokeWidth = stateColor == null ? 2.5 : 3,
     );
 
     // Name centered
@@ -2513,37 +2565,43 @@ class SchematicMapPainter extends CustomPainter {
     bool isSelected = false,
     bool isFrom = false,
   }) {
-    _drawSelectionHalo(
-      canvas,
-      station.position,
+    final stateColor = _stationStateColor(
       isSelected: isSelected,
       isFrom: isFrom,
-      radius: 13,
     );
 
     // Jika stasiun punya kode, gambar sebagai lingkaran berwarna dengan kode di dalam
     if (station.code.isNotEmpty) {
       final color = _getStationColor(station);
       final radius = stationNodeRadius(station);
-      final effectiveR = isSelected || isFrom ? max(radius, 13.0) : radius;
+      final effectiveR = stateColor == null ? radius : radius * 1.12;
 
-      // Lingkaran putih (latar)
-      canvas.drawCircle(
-        station.position,
-        effectiveR,
-        Paint()..color = Colors.white,
-      );
-
-      // Lingkaran berwarna (border tebal)
-      final borderColor = isSelected || isFrom ? AppColors.primaryBlue : color;
-      canvas.drawCircle(
-        station.position,
-        effectiveR,
-        Paint()
-          ..color = borderColor
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 2.5,
-      );
+      if (stateColor != null) {
+        canvas.drawCircle(
+          station.position,
+          effectiveR + 2,
+          Paint()..color = Colors.white,
+        );
+        canvas.drawCircle(
+          station.position,
+          effectiveR,
+          Paint()..color = stateColor,
+        );
+      } else {
+        canvas.drawCircle(
+          station.position,
+          effectiveR,
+          Paint()..color = Colors.white,
+        );
+        canvas.drawCircle(
+          station.position,
+          effectiveR,
+          Paint()
+            ..color = color
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 2.5,
+        );
+      }
 
       // Teks kode stasiun di tengah lingkaran
       // Pisahkan huruf dan angka agar bisa ditampilkan dua baris
@@ -2557,7 +2615,7 @@ class SchematicMapPainter extends CustomPainter {
           text: TextSpan(
             text: letterPart,
             style: TextStyle(
-              color: isSelected || isFrom ? AppColors.primaryBlue : color,
+              color: stateColor == null ? color : Colors.white,
               fontSize: 6.5,
               fontWeight: FontWeight.w900,
               height: 1.0,
@@ -2569,7 +2627,7 @@ class SchematicMapPainter extends CustomPainter {
           text: TextSpan(
             text: numberPart,
             style: TextStyle(
-              color: isSelected || isFrom ? AppColors.primaryBlue : color,
+              color: stateColor == null ? color : Colors.white,
               fontSize: 6.5,
               fontWeight: FontWeight.w900,
               height: 1.0,
@@ -2597,7 +2655,7 @@ class SchematicMapPainter extends CustomPainter {
           text: TextSpan(
             text: codeText,
             style: TextStyle(
-              color: isSelected || isFrom ? AppColors.primaryBlue : color,
+              color: stateColor == null ? color : Colors.white,
               fontSize: 7,
               fontWeight: FontWeight.w900,
             ),
@@ -2615,35 +2673,43 @@ class SchematicMapPainter extends CustomPainter {
     } else {
       // Stasiun tanpa kode — gambar dot biasa
       final radius = stationNodeRadius(station);
-      final effectiveR = isSelected || isFrom ? max(radius, 10.0) : radius;
+      final effectiveR = stateColor == null ? radius : radius * 1.12;
 
-      canvas.drawCircle(
-        station.position,
-        effectiveR,
-        Paint()..color = Colors.white,
-      );
-
-      final borderColor = isSelected || isFrom
-          ? AppColors.primaryBlue
-          : station.isTransit
-          ? AppColors.textPrimary
-          : AppColors.textSecondary;
-      canvas.drawCircle(
-        station.position,
-        effectiveR,
-        Paint()
-          ..color = borderColor
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = station.isTransit ? 2.5 : 1.5,
-      );
-
-      if (station.isTransit || isSelected || isFrom) {
+      if (stateColor != null) {
         canvas.drawCircle(
           station.position,
-          isSelected || isFrom ? 3 : 2,
-          Paint()
-            ..color = isFrom ? AppColors.primaryBlue : AppColors.textPrimary,
+          effectiveR + 2,
+          Paint()..color = Colors.white,
         );
+        canvas.drawCircle(
+          station.position,
+          effectiveR,
+          Paint()..color = stateColor,
+        );
+        canvas.drawCircle(station.position, 3, Paint()..color = Colors.white);
+      } else {
+        canvas.drawCircle(
+          station.position,
+          effectiveR,
+          Paint()..color = Colors.white,
+        );
+        canvas.drawCircle(
+          station.position,
+          effectiveR,
+          Paint()
+            ..color = station.isTransit
+                ? AppColors.textPrimary
+                : AppColors.textSecondary
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = station.isTransit ? 2.5 : 1.5,
+        );
+        if (station.isTransit) {
+          canvas.drawCircle(
+            station.position,
+            2,
+            Paint()..color = AppColors.textPrimary,
+          );
+        }
       }
     }
   }
