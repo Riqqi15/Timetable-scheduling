@@ -1,7 +1,7 @@
 {
   "scheduleAllServicesNote": "所有车站为每趟列车显示一条时刻。选择车站可查看该站的全部发车时刻。",
   "scheduleStationCatalogError": "未能加载车站列表。请重试以查看全部选项。",
-  "mapYouAreHere": "您在这里",
+  "mapYouAreHere": "你的位置",
   "mapLocationLoading": "正在查找您的位置…",
   "mapLocationUnconfirmed": "尚无法确认车站。请靠近车站或尝试定位按钮。",
   "mapLocationUnavailable": "当前定位不可用。请重试定位按钮。",

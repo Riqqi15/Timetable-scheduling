@@ -15,7 +15,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get scheduleStationCatalogError => '未能加载车站列表。请重试以查看全部选项。';
 
   @override
-  String get mapYouAreHere => '您在这里';
+  String get mapYouAreHere => '你的位置';
 
   @override
   String get mapLocationLoading => '正在查找您的位置…';
@@ -2378,7 +2378,7 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
   String get scheduleStationCatalogError => '未能加载车站列表。请重试以查看全部选项。';
 
   @override
-  String get mapYouAreHere => '您在这里';
+  String get mapYouAreHere => '你的位置';
 
   @override
   String get mapLocationLoading => '正在查找您的位置…';

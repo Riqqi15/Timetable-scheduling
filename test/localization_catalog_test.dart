@@ -34,6 +34,14 @@ double scriptCoverage(Map<String, Object?> arb, RegExp script) {
 void main() {
   final english = readArb('lib/l10n/app_en.arb');
 
+  test('current location label is localized as a location marker', () {
+    expect(readArb('lib/l10n/app_id.arb')['mapYouAreHere'], 'Lokasi kamu');
+    expect(readArb('lib/l10n/app_en.arb')['mapYouAreHere'], 'Your location');
+    expect(readArb('lib/l10n/app_zh.arb')['mapYouAreHere'], '你的位置');
+    expect(readArb('lib/l10n/app_zh_Hans.arb')['mapYouAreHere'], '你的位置');
+    expect(readArb('lib/l10n/app_ar.arb')['mapYouAreHere'], 'موقعك');
+  });
+
   for (final locale in const <String>['id', 'zh', 'zh_Hans', 'ar']) {
     test('$locale catalog has a complete localization contract', () {
       final catalog = readArb('lib/l10n/app_$locale.arb');

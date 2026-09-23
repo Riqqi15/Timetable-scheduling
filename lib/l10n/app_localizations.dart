@@ -118,7 +118,7 @@ abstract class AppLocalizations {
   /// No description provided for @mapYouAreHere.
   ///
   /// In id, this message translates to:
-  /// **'Kamu di sini'**
+  /// **'Lokasi kamu'**
   String get mapYouAreHere;
 
   /// No description provided for @mapLocationLoading.

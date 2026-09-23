@@ -1,7 +1,7 @@
 {
   "scheduleAllServicesNote": "Semua Stasiun menampilkan satu jadwal per perjalanan KA. Pilih stasiun untuk seluruh keberangkatan di stasiun tersebut.",
   "scheduleStationCatalogError": "Daftar stasiun belum berhasil dimuat. Coba lagi untuk melihat semua pilihan.",
-  "mapYouAreHere": "Kamu di sini",
+  "mapYouAreHere": "Lokasi kamu",
   "mapLocationLoading": "Mencari lokasi kamu…",
   "mapLocationUnconfirmed": "Stasiun belum dapat dipastikan. Dekati stasiun atau coba tombol lokasi.",
   "mapLocationUnavailable": "Lokasi terkini belum tersedia. Coba tombol lokasi lagi.",

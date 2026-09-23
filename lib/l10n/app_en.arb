@@ -1,7 +1,7 @@
 {
   "scheduleAllServicesNote": "All Stations lists one schedule per train journey. Choose a station to see all its departures.",
   "scheduleStationCatalogError": "The station list could not be loaded. Try again to see all options.",
-  "mapYouAreHere": "You are here",
+  "mapYouAreHere": "Your location",
   "mapLocationLoading": "Finding your location…",
   "mapLocationUnconfirmed": "Station not confirmed. Move closer or try the location button.",
   "mapLocationUnavailable": "Current location unavailable. Try the location button again.",

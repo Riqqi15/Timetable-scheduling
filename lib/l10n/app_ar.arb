@@ -1,7 +1,7 @@
 {
   "scheduleAllServicesNote": "تعرض جميع المحطات جدولاً واحداً لكل رحلة قطار. اختر محطة لعرض جميع رحلات المغادرة منها.",
   "scheduleStationCatalogError": "تعذر تحميل قائمة المحطات. حاول مرة أخرى لعرض جميع الخيارات.",
-  "mapYouAreHere": "أنت هنا",
+  "mapYouAreHere": "موقعك",
   "mapLocationLoading": "جارٍ تحديد موقعك…",
   "mapLocationUnconfirmed": "لم يتم تأكيد المحطة. اقترب أو جرّب زر الموقع.",
   "mapLocationUnavailable": "الموقع الحالي غير متاح. جرّب زر الموقع مرة أخرى.",

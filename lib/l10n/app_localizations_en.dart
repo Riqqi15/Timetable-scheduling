@@ -17,7 +17,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'The station list could not be loaded. Try again to see all options.';
 
   @override
-  String get mapYouAreHere => 'You are here';
+  String get mapYouAreHere => 'Your location';
 
   @override
   String get mapLocationLoading => 'Finding your location…';

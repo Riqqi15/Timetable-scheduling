@@ -17,7 +17,7 @@ class AppLocalizationsId extends AppLocalizations {
       'Daftar stasiun belum berhasil dimuat. Coba lagi untuk melihat semua pilihan.';
 
   @override
-  String get mapYouAreHere => 'Kamu di sini';
+  String get mapYouAreHere => 'Lokasi kamu';
 
   @override
   String get mapLocationLoading => 'Mencari lokasi kamu…';

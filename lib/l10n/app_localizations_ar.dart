@@ -17,7 +17,7 @@ class AppLocalizationsAr extends AppLocalizations {
       'تعذر تحميل قائمة المحطات. حاول مرة أخرى لعرض جميع الخيارات.';
 
   @override
-  String get mapYouAreHere => 'أنت هنا';
+  String get mapYouAreHere => 'موقعك';
 
   @override
   String get mapLocationLoading => 'جارٍ تحديد موقعك…';
