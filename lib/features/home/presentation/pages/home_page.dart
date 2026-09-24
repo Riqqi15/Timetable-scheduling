@@ -124,15 +124,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void _showAreaComingSoon(BuildContext drawerContext) {
-    final message = AppLocalizations.of(drawerContext)!.filterAreaComingSoon;
-    Navigator.pop(drawerContext);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      AppNotice.show(context, message: message);
-    });
-  }
-
   Widget _buildEndDrawer(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Drawer(
@@ -143,87 +134,6 @@ class _HomePageState extends State<HomePage> {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(0, 8, 0, 12),
             children: [
-              // Filter Area/Kota (Region Selector)
-              ExpansionTile(
-                leading: const Icon(
-                  Icons.location_city_rounded,
-                  color: AppColors.primaryBlue,
-                ),
-                title: Text(
-                  l10n.filterArea,
-                  style: const TextStyle(fontWeight: FontWeight.w600),
-                ),
-                initiallyExpanded: true,
-                shape: const Border(),
-                children: [
-                  ListTile(
-                    contentPadding: const EdgeInsets.only(left: 72, right: 16),
-                    title: Text(
-                      l10n.areaJabodetabek,
-                      style: const TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                    trailing: const Icon(
-                      Icons.check,
-                      color: AppColors.primaryBlue,
-                      size: 20,
-                    ),
-                    onTap: () {
-                      Navigator.pop(context); // Close drawer
-                    },
-                  ),
-                  ListTile(
-                    contentPadding: const EdgeInsets.only(left: 72, right: 16),
-                    title: Text(
-                      l10n.homeAreaCentral,
-                      style: TextStyle(color: AppColors.textHint),
-                    ),
-                    onTap: () => _showAreaComingSoon(context),
-                  ),
-                  ListTile(
-                    contentPadding: const EdgeInsets.only(left: 72, right: 16),
-                    title: Text(
-                      l10n.homeAreaSouth,
-                      style: TextStyle(color: AppColors.textHint),
-                    ),
-                    onTap: () => _showAreaComingSoon(context),
-                  ),
-                  ListTile(
-                    contentPadding: const EdgeInsets.only(left: 72, right: 16),
-                    title: Text(
-                      l10n.homeAreaWest,
-                      style: TextStyle(color: AppColors.textHint),
-                    ),
-                    onTap: () => _showAreaComingSoon(context),
-                  ),
-                  ListTile(
-                    contentPadding: const EdgeInsets.only(left: 72, right: 16),
-                    title: Text(
-                      l10n.homeAreaEast,
-                      style: TextStyle(color: AppColors.textHint),
-                    ),
-                    onTap: () => _showAreaComingSoon(context),
-                  ),
-                  ListTile(
-                    contentPadding: const EdgeInsets.only(left: 72, right: 16),
-                    title: Text(
-                      l10n.homeAreaNorth,
-                      style: TextStyle(color: AppColors.textHint),
-                    ),
-                    onTap: () => _showAreaComingSoon(context),
-                  ),
-                  ListTile(
-                    contentPadding: const EdgeInsets.only(left: 72, right: 16),
-                    title: Text(
-                      l10n.homeAreaGreaterJakarta,
-                      style: TextStyle(color: AppColors.textHint),
-                    ),
-                    onTap: () => _showAreaComingSoon(context),
-                  ),
-                ],
-              ),
-
-              const Divider(color: AppColors.cardBorder),
-
               // Filter Jalur (Line Filter)
               ExpansionTile(
                 leading: const Icon(

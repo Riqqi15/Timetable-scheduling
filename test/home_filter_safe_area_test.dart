@@ -44,9 +44,7 @@ void main() {
     );
   }
 
-  testWidgets('coming-soon feedback closes the filter before appearing', (
-    tester,
-  ) async {
+  testWidgets('drawer exposes only transit line filters', (tester) async {
     tester.view.physicalSize = const Size(390, 700);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -56,21 +54,10 @@ void main() {
 
     await tester.tap(find.byIcon(Icons.menu_rounded));
     await tester.pumpAndSettle();
-    expect(
-      tester.state<ScaffoldState>(find.byType(Scaffold).first).isEndDrawerOpen,
-      isTrue,
-    );
 
-    await tester.tap(find.text('Jakarta Pusat'));
-    await tester.pumpAndSettle();
-
-    expect(
-      tester.state<ScaffoldState>(find.byType(Scaffold).first).isEndDrawerOpen,
-      isFalse,
-    );
-    expect(find.byKey(const Key('app_notice_info')), findsOneWidget);
-
-    await tester.pump(const Duration(seconds: 4));
-    await tester.pumpAndSettle();
+    expect(find.text('Filter Kawasan'), findsNothing);
+    expect(find.text('Jakarta Pusat'), findsNothing);
+    expect(find.text('Filter Jalur Transportasi'), findsOneWidget);
+    expect(find.byKey(const ValueKey('home-filter-bogor')), findsOneWidget);
   });
 }

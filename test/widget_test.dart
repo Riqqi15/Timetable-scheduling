@@ -123,7 +123,8 @@ void main() {
 
     await tester.tap(find.byIcon(Icons.menu_rounded));
     await tester.pumpAndSettle();
-    expect(find.text('Filter Kawasan'), findsOneWidget);
+    expect(find.text('Filter Kawasan'), findsNothing);
+    expect(find.text('Seluruh Jabodetabek'), findsNothing);
     expect(find.text('Filter Jalur Transportasi'), findsOneWidget);
     expect(
       find.text(

@@ -17,7 +17,7 @@
 - Modify: `test/home_filter_safe_area_test.dart`
 - Modify: `lib/features/home/presentation/pages/home_page.dart`
 
-- [ ] **Step 1: Update the home widget test to require a line-only drawer**
+- [x] **Step 1: Update the home widget test to require a line-only drawer**
 
 Replace the drawer assertions with:
 
@@ -27,7 +27,7 @@ expect(find.text('Seluruh Jabodetabek'), findsNothing);
 expect(find.text('Filter Jalur Transportasi'), findsOneWidget);
 ```
 
-- [ ] **Step 2: Replace the obsolete area-notice test**
+- [x] **Step 2: Replace the obsolete area-notice test**
 
 Replace `coming-soon feedback closes the filter before appearing` with:
 
@@ -53,7 +53,7 @@ testWidgets('drawer exposes only transit line filters', (tester) async {
 });
 ```
 
-- [ ] **Step 3: Run focused tests and verify they fail**
+- [x] **Step 3: Run focused tests and verify they fail**
 
 Run:
 
@@ -63,11 +63,11 @@ flutter test test/widget_test.dart test/home_filter_safe_area_test.dart
 
 Expected: FAIL because the area section is still rendered.
 
-- [ ] **Step 4: Delete the area UI and callback**
+- [x] **Step 4: Delete the area UI and callback**
 
 In `home_page.dart`, delete `_showAreaComingSoon`, the area `ExpansionTile`, and the divider immediately following it. Preserve the existing line `ExpansionTile` unchanged so it becomes the first drawer child.
 
-- [ ] **Step 5: Run focused tests and verify they pass**
+- [x] **Step 5: Run focused tests and verify they pass**
 
 Run:
 
@@ -77,7 +77,7 @@ flutter test test/widget_test.dart test/home_filter_safe_area_test.dart
 
 Expected: PASS.
 
-- [ ] **Step 6: Verify the project**
+- [x] **Step 6: Verify the project**
 
 Run:
 
@@ -88,7 +88,7 @@ flutter test
 
 Expected: analysis reports no issues and all tests pass.
 
-- [ ] **Step 7: Commit the implementation**
+- [x] **Step 7: Commit the implementation**
 
 ```powershell
 git add lib/features/home/presentation/pages/home_page.dart test/widget_test.dart test/home_filter_safe_area_test.dart
