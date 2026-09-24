@@ -100,6 +100,22 @@ void main() {
       expect(find.text('Kereta berikutnya dari Manggarai'), findsOneWidget);
       expect(
         find.byKey(const ValueKey('next-train-direction-Cikini')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(const ValueKey('next-train-direction-Tebet')),
+        findsNothing,
+      );
+      expect(find.text('KA 101 · 18:05'), findsNothing);
+      expect(find.text('KA 202 · 18:08'), findsNothing);
+
+      await tester.ensureVisible(find.byKey(const Key('next-train-toggle')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('next-train-toggle')));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const ValueKey('next-train-direction-Cikini')),
         findsOneWidget,
       );
       expect(
@@ -110,6 +126,15 @@ void main() {
       expect(find.text('KA 202 · 18:08'), findsOneWidget);
       expect(find.text('Peron belum tersedia'), findsOneWidget);
       expect(find.text('Berangkat 5 menit lagi'), findsOneWidget);
+
+      await tester.ensureVisible(find.byKey(const Key('next-train-toggle')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('next-train-toggle')));
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('next-train-direction-Cikini')),
+        findsNothing,
+      );
       expect(tester.takeException(), isNull);
     },
   );

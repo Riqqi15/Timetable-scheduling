@@ -812,7 +812,7 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-class _NextTrainBoard extends StatelessWidget {
+class _NextTrainBoard extends StatefulWidget {
   final NextTrainController controller;
   final ValueChanged<NextTrainDeparture> onDepartureTap;
 
@@ -822,10 +822,43 @@ class _NextTrainBoard extends StatelessWidget {
   });
 
   @override
+  State<_NextTrainBoard> createState() => _NextTrainBoardState();
+}
+
+class _NextTrainBoardState extends State<_NextTrainBoard> {
+  String? _expandedStationName;
+
+  void _toggle() {
+    final controller = widget.controller;
+    final stationName = controller.stationName;
+    if (controller.state != NextTrainState.success ||
+        controller.groups.isEmpty ||
+        stationName == null) {
+      return;
+    }
+    setState(() {
+      _expandedStationName = _expandedStationName == stationName
+          ? null
+          : stationName;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) => ListenableBuilder(
-    listenable: controller,
+    listenable: widget.controller,
     builder: (context, _) {
       final l10n = AppLocalizations.of(context)!;
+      final controller = widget.controller;
+      final title = controller.stationName == null
+          ? l10n.nextTrain
+          : l10n.homeNextTrainFrom(controller.stationName!);
+      final canToggle =
+          controller.state == NextTrainState.success &&
+          controller.groups.isNotEmpty &&
+          controller.stationName != null;
+      final isExpanded =
+          canToggle && _expandedStationName == controller.stationName;
+      final showPrimaryContent = !canToggle || isExpanded;
       return Container(
         width: double.infinity,
         padding: const EdgeInsets.all(12),
@@ -839,98 +872,147 @@ class _NextTrainBoard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Row(
-              children: [
-                Container(
-                  width: 7,
-                  height: 7,
-                  decoration: BoxDecoration(
-                    color: controller.state == NextTrainState.success
-                        ? AppColors.statusGreen
-                        : AppColors.textHint,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    controller.stationName == null
-                        ? l10n.nextTrain
-                        : l10n.homeNextTrainFrom(controller.stationName!),
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.textPrimary,
+            Semantics(
+              container: true,
+              button: canToggle,
+              expanded: canToggle ? isExpanded : null,
+              label: title,
+              child: ExcludeSemantics(
+                child: InkWell(
+                  key: const Key('next-train-toggle'),
+                  onTap: canToggle ? _toggle : null,
+                  borderRadius: BorderRadius.circular(10),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(minHeight: 48),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 7,
+                          height: 7,
+                          decoration: BoxDecoration(
+                            color: controller.state == NextTrainState.success
+                                ? AppColors.statusGreen
+                                : AppColors.textHint,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            title,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                        ),
+                        if (canToggle)
+                          AnimatedRotation(
+                            turns: isExpanded ? 0.5 : 0,
+                            duration: const Duration(milliseconds: 180),
+                            curve: Curves.easeOutCubic,
+                            child: const Icon(
+                              Icons.keyboard_arrow_down_rounded,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                      ],
                     ),
                   ),
                 ),
-              ],
+              ),
             ),
-            const SizedBox(height: 10),
-            if (controller.state == NextTrainState.loading)
-              const LinearProgressIndicator(
-                key: Key('next-train-loading'),
-                minHeight: 3,
-                borderRadius: BorderRadius.all(Radius.circular(3)),
-              )
-            else if (controller.state == NextTrainState.idle)
-              _NextTrainMessage(
-                icon: Icons.location_searching_rounded,
-                message: l10n.mapLocationUnconfirmed,
-              )
-            else if (controller.state == NextTrainState.error)
-              _NextTrainMessage(
-                icon: Icons.cloud_off_rounded,
-                message: l10n.scheduleBackendError,
-                onRetry: controller.retry,
-              )
-            else if (controller.state == NextTrainState.empty)
-              _NextTrainMessage(
-                icon: Icons.schedule_rounded,
-                message: l10n.scheduleNotFound,
-                onRetry: controller.retry,
-              )
-            else
-              for (final group in controller.groups) ...[
-                Padding(
-                  key: ValueKey('next-train-direction-${group.nextStation}'),
-                  padding: const EdgeInsets.only(top: 6, bottom: 2),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.arrow_forward_rounded,
-                        size: 17,
-                        color: AppColors.primaryBlue,
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        group.nextStation,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.primaryBlue,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                for (var i = 0; i < group.departures.length; i++)
-                  _NextTrainRow(
-                    departure: group.departures[i],
-                    showDivider: i < group.departures.length - 1,
-                    onTap: () => onDepartureTap(group.departures[i]),
-                  ),
-              ],
+            ClipRect(
+              child: AnimatedSize(
+                alignment: Alignment.topCenter,
+                duration: const Duration(milliseconds: 180),
+                curve: Curves.easeOutCubic,
+                child: showPrimaryContent
+                    ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 10),
+                          if (controller.state == NextTrainState.loading)
+                            const LinearProgressIndicator(
+                              key: Key('next-train-loading'),
+                              minHeight: 3,
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(3),
+                              ),
+                            )
+                          else if (controller.state == NextTrainState.idle)
+                            _NextTrainMessage(
+                              icon: Icons.location_searching_rounded,
+                              message: l10n.mapLocationUnconfirmed,
+                            )
+                          else if (controller.state == NextTrainState.error)
+                            _NextTrainMessage(
+                              icon: Icons.cloud_off_rounded,
+                              message: l10n.scheduleBackendError,
+                              onRetry: controller.retry,
+                            )
+                          else if (controller.state == NextTrainState.empty)
+                            _NextTrainMessage(
+                              icon: Icons.schedule_rounded,
+                              message: l10n.scheduleNotFound,
+                              onRetry: controller.retry,
+                            )
+                          else
+                            for (final group in controller.groups) ...[
+                              Padding(
+                                key: ValueKey(
+                                  'next-train-direction-${group.nextStation}',
+                                ),
+                                padding: const EdgeInsets.only(
+                                  top: 6,
+                                  bottom: 2,
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.arrow_forward_rounded,
+                                      size: 17,
+                                      color: AppColors.primaryBlue,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      group.nextStation,
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w800,
+                                        color: AppColors.primaryBlue,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              for (var i = 0; i < group.departures.length; i++)
+                                _NextTrainRow(
+                                  departure: group.departures[i],
+                                  showDivider: i < group.departures.length - 1,
+                                  onTap: () => widget.onDepartureTap(
+                                    group.departures[i],
+                                  ),
+                                ),
+                            ],
+                        ],
+                      )
+                    : const SizedBox.shrink(),
+              ),
+            ),
             if (controller.isRefreshing) ...[
               const SizedBox(height: 8),
               const LinearProgressIndicator(minHeight: 2),
             ],
-            if (controller.hasRefreshError)
+            if (controller.hasRefreshError) ...[
+              const SizedBox(height: 8),
               _NextTrainMessage(
                 icon: Icons.sync_problem_rounded,
                 message: l10n.scheduleBackendError,
                 onRetry: controller.retry,
               ),
+            ],
           ],
         ),
       );
