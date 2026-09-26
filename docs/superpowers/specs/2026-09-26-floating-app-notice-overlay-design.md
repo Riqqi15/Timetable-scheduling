@@ -24,6 +24,27 @@ It does not replace:
 - Tapping the card dismisses it immediately. A vertical swipe toward the nearest screen edge also dismisses it.
 - Only one app notice may be visible. Showing another notice dismisses and replaces the current one.
 
+## Placement Policy
+
+Placement is selected by the event context, not by notice color or severity alone.
+
+Use the top overlay for app-wide state changes and time-sensitive information that must remain visible above page controls:
+
+- language applied;
+- travel alarm activated or deactivated;
+- an active travel reminder.
+
+Use the bottom overlay for feedback caused by a control on the current page, positioned above the bottom navigation and gesture safe area:
+
+- payment link or checkout failures;
+- missing route-origin validation;
+- station voice-guide failures;
+- customer-service and staff-help actions;
+- ticket sharing, receipt download, and history clearing;
+- help-center actions.
+
+Call sites keep choosing `AppNoticePlacement` explicitly when they need the top position. The default remains bottom for local feedback. Notice type continues to control color, icon, and duration only.
+
 ## Visual Treatment
 
 The existing light, rounded card treatment is retained:
