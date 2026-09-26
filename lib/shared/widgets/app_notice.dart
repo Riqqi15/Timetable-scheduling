@@ -21,7 +21,9 @@ abstract final class AppNotice {
     final trimmedMessage = message.trim();
     if (trimmedMessage.isEmpty) return;
 
-    final overlay = Overlay.maybeOf(context, rootOverlay: true);
+    final overlay =
+        Overlay.maybeOf(context, rootOverlay: true) ??
+        Navigator.maybeOf(context, rootNavigator: true)?.overlay;
     if (overlay == null) return;
     final resolvedDuration = duration ?? _durationFor(type);
     _removeActiveEntry();

@@ -131,7 +131,7 @@ flutter test test/app_notice_test.dart test/app_notice_usage_test.dart
 
 Expected: PASS with no `MaterialBanner`, no `SnackBar`, stable body geometry, and correct dismissal behavior.
 
-- [ ] **Step 4: Commit the overlay engine**
+- [x] **Step 4: Commit the overlay engine**
 
 ```powershell
 git add lib/shared/widgets/app_notice.dart test/app_notice_test.dart test/app_notice_usage_test.dart
@@ -146,7 +146,7 @@ git commit -m "fix: float app notices above page content"
 - Modify: `lib/features/profile/presentation/pages/completed_ticket_detail_page.dart`
 - Modify: `lib/features/profile/presentation/pages/ticket_history_page.dart`
 
-- [ ] **Step 1: Move the time-sensitive travel reminder to the top**
+- [x] **Step 1: Move the time-sensitive travel reminder to the top**
 
 Pass the explicit placement in `lib/main.dart`:
 
@@ -159,7 +159,7 @@ AppNotice.show(
 );
 ```
 
-- [ ] **Step 2: Keep local ticket actions at the bottom**
+- [x] **Step 2: Keep local ticket actions at the bottom**
 
 Remove `placement: AppNoticePlacement.top` from ticket sharing, receipt download, and history clearing. They will use the bottom default because each message confirms an action initiated on the current page.
 
@@ -168,7 +168,7 @@ Do not change these existing placements:
 - language success, alarm activation, and alarm deactivation remain top;
 - language-save failure, checkout errors, route-origin validation, station voice errors, customer-service actions, staff-help actions, and help-center feedback remain bottom.
 
-- [ ] **Step 3: Run affected widget tests**
+- [x] **Step 3: Run affected widget tests**
 
 Run:
 

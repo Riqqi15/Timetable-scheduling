@@ -16,7 +16,6 @@ class CompletedTicketDetailPage extends StatelessWidget {
       context,
       message: l10n.completedTicketReceiptReady,
       type: AppNoticeType.success,
-      placement: AppNoticePlacement.top,
     );
   }
 

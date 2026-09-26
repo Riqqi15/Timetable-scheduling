@@ -83,12 +83,14 @@ class _MyAppState extends State<MyApp> {
     final reminder = _travelAlarmController.reminder.value;
     if (reminder == null) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final context = appRouter.routerDelegate.navigatorKey.currentContext;
+      final context =
+          appRouter.routerDelegate.navigatorKey.currentState?.overlay?.context;
       if (context == null) return;
       AppNotice.show(
         context,
         message: reminder.message,
         type: AppNoticeType.warning,
+        placement: AppNoticePlacement.top,
       );
     });
   }

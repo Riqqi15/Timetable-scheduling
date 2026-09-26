@@ -33,7 +33,6 @@ class _TicketHistoryPageState extends State<TicketHistoryPage> {
       context,
       message: l10n.historyCleared,
       type: AppNoticeType.success,
-      placement: AppNoticePlacement.top,
     );
   }
 

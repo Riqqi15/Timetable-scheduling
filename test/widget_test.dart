@@ -524,10 +524,9 @@ void main() {
     await tester.pump();
     expect(find.text('Bukti perjalanan berhasil disiapkan.'), findsOneWidget);
 
-    tester
-        .state<ScaffoldMessengerState>(find.byType(ScaffoldMessenger))
-        .clearSnackBars();
-    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('app_notice_success')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 200));
     await tester.tap(find.text('Laporkan masalah'));
     await tester.pumpAndSettle();
     expect(find.text('Pusat Bantuan'), findsOneWidget);

@@ -16,7 +16,6 @@ class ActiveTicketDetailPage extends StatelessWidget {
       context,
       message: l10n.activeTicketReadyShare,
       type: AppNoticeType.success,
-      placement: AppNoticePlacement.top,
     );
   }
 
