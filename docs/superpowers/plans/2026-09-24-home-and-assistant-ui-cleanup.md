@@ -16,7 +16,7 @@
 - Modify: `test/home_next_train_test.dart`
 - Modify: `lib/features/home/presentation/pages/home_page.dart`
 
-- [ ] **Step 1: Write the failing collapse interaction test**
+- [x] **Step 1: Write the failing collapse interaction test**
 
 Update `home shows real departures for every nearest-station direction` so the successful list is initially absent, then verify opening and closing:
 
@@ -38,7 +38,7 @@ await tester.pumpAndSettle();
 expect(find.byKey(const ValueKey('next-train-direction-Cikini')), findsNothing);
 ```
 
-- [ ] **Step 2: Run the focused test and verify it fails**
+- [x] **Step 2: Run the focused test and verify it fails**
 
 Run:
 
@@ -48,7 +48,7 @@ flutter test test/home_next_train_test.dart
 
 Expected: FAIL because successful departures are still visible initially and `next-train-toggle` does not exist.
 
-- [ ] **Step 3: Implement the local expansion state**
+- [x] **Step 3: Implement the local expansion state**
 
 Convert `_NextTrainBoard` into a `StatefulWidget`. Store `String? _expandedStationName`; consider the board expanded only when the controller is successful, its station name is non-null, and it equals `_expandedStationName`.
 
@@ -61,7 +61,7 @@ onTap: canToggle ? _toggle : null,
 
 Use `AnimatedRotation` with `Icons.keyboard_arrow_down_rounded` and wrap the departure body in `AnimatedSize`. Keep loading, idle, empty, error, refresh progress, and refresh error content visible.
 
-- [ ] **Step 4: Run the focused test and verify it passes**
+- [x] **Step 4: Run the focused test and verify it passes**
 
 Run:
 
@@ -71,7 +71,7 @@ flutter test test/home_next_train_test.dart
 
 Expected: PASS.
 
-- [ ] **Step 5: Commit the next-train change**
+- [x] **Step 5: Commit the next-train change**
 
 ```powershell
 git add lib/features/home/presentation/pages/home_page.dart test/home_next_train_test.dart
@@ -86,7 +86,7 @@ git commit -m "feat: collapse next train board by default"
 - Modify: `lib/features/assistant/presentation/pages/assistant_page.dart`
 - Modify: `lib/features/assistant/presentation/controllers/assistant_controller.dart`
 
-- [ ] **Step 1: Update tests to require the wake-word card to be absent**
+- [x] **Step 1: Update tests to require the wake-word card to be absent**
 
 In the Assistant accessibility test, replace wake-word assertions with:
 
@@ -101,7 +101,7 @@ expect(find.byKey(const Key('wake-word-switch')), findsNothing);
 
 Keep the primary microphone semantic tap assertion. Delete the separate widget test `Assistant does not pretend unsupported wake word is active`. Rename the first controller test to `starts ready` and remove its wake-word calls.
 
-- [ ] **Step 2: Run focused tests and verify they fail**
+- [x] **Step 2: Run focused tests and verify they fail**
 
 Run:
 
@@ -111,11 +111,11 @@ flutter test test/assistant_controller_test.dart test/widget_test.dart
 
 Expected: FAIL because the wake-word card is still rendered.
 
-- [ ] **Step 3: Remove the wake-word UI and controller state**
+- [x] **Step 3: Remove the wake-word UI and controller state**
 
 Delete `_buildWakeWordSetting`, its call and spacer, and the wake-word cleanup branch in `AssistantPage.dispose`. Delete `wakeWordEnabled` and `toggleWakeWord` from `AssistantController`. Do not alter microphone, speech recognition, or conversation code.
 
-- [ ] **Step 4: Run focused tests and verify they pass**
+- [x] **Step 4: Run focused tests and verify they pass**
 
 Run:
 
@@ -125,7 +125,7 @@ flutter test test/assistant_controller_test.dart test/widget_test.dart
 
 Expected: PASS.
 
-- [ ] **Step 5: Run final verification**
+- [x] **Step 5: Run final verification**
 
 Run:
 
@@ -136,7 +136,7 @@ flutter test
 
 Expected: analysis reports no issues and all tests pass.
 
-- [ ] **Step 6: Commit the Assistant cleanup**
+- [x] **Step 6: Commit the Assistant cleanup**
 
 ```powershell
 git add lib/features/assistant/presentation/pages/assistant_page.dart lib/features/assistant/presentation/controllers/assistant_controller.dart test/assistant_controller_test.dart test/widget_test.dart docs/superpowers/plans/2026-09-24-home-and-assistant-ui-cleanup.md

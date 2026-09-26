@@ -784,7 +784,12 @@ void main() {
     );
 
     expect(find.text('Asisten Perjalanan'), findsOneWidget);
-    expect(find.text('Dengarkan "Halo Asisten"'), findsOneWidget);
+    expect(find.text('Dengarkan "Halo Asisten"'), findsNothing);
+    expect(
+      find.text('Belum tersedia. Ketuk mikrofon untuk berbicara.'),
+      findsNothing,
+    );
+    expect(find.byKey(const Key('wake-word-switch')), findsNothing);
     expect(find.bySemanticsLabel('Mulai percakapan suara'), findsNWidgets(2));
     expect(find.text('Rencanakan perjalanan'), findsOneWidget);
     expect(find.text('Bantuan petugas'), findsOneWidget);
@@ -792,16 +797,10 @@ void main() {
     final microphoneSemantics = tester
         .getSemantics(find.bySemanticsLabel('Mulai percakapan suara').first)
         .getSemanticsData();
-    final wakeWordSemantics = tester
-        .getSemantics(
-          find.bySemanticsLabel(RegExp('Mode kata pemicu Halo Asisten')),
-        )
-        .getSemanticsData();
     final quickActionSemantics = tester
         .getSemantics(find.bySemanticsLabel('Buka Rencanakan perjalanan'))
         .getSemanticsData();
     expect(microphoneSemantics.hasAction(SemanticsAction.tap), isTrue);
-    expect(wakeWordSemantics.hasAction(SemanticsAction.tap), isFalse);
     expect(quickActionSemantics.hasAction(SemanticsAction.tap), isTrue);
 
     await tester.tap(find.byKey(const Key('assistant-microphone-button')));
@@ -811,20 +810,7 @@ void main() {
       findsNWidgets(2),
     );
 
-    await tester.tap(find.byKey(const Key('wake-word-switch')));
-    await tester.pump();
-
     expect(find.text('Kata pemicu aktif'), findsNothing);
-    expect(
-      find.text('Belum tersedia. Ketuk mikrofon untuk berbicara.'),
-      findsOneWidget,
-    );
-    expect(
-      tester
-          .widget<Switch>(find.byKey(const Key('wake-word-switch')))
-          .onChanged,
-      isNull,
-    );
   });
 
   testWidgets('Assistant keeps the latest conversation visible', (
@@ -1181,29 +1167,6 @@ void main() {
         reason: '${entry.key} should open ${entry.value}',
       );
     }
-  });
-
-  testWidgets('Assistant does not pretend unsupported wake word is active', (
-    WidgetTester tester,
-  ) async {
-    appRouter.go('/asisten');
-    await tester.pumpWidget(const MyApp());
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.byKey(const Key('wake-word-switch')));
-    await tester.pump();
-    expect(find.text('Kata pemicu aktif'), findsNothing);
-
-    appRouter.go('/');
-    await tester.pumpAndSettle();
-    appRouter.go('/asisten');
-    await tester.pumpAndSettle();
-
-    expect(
-      find.text('Belum tersedia. Ketuk mikrofon untuk berbicara.'),
-      findsOneWidget,
-    );
-    expect(find.text('Kata pemicu aktif'), findsNothing);
   });
 
   testWidgets('Assistant page cancels an injected controller when disposed', (

@@ -75,9 +75,6 @@ class _AssistantPageState extends State<AssistantPage>
     _alarmController.removeListener(_handleAlarmChange);
     _controller.cancelConversation();
     _controller.onTranscript = null;
-    if (_controller.wakeWordEnabled) {
-      _controller.toggleWakeWord(false);
-    }
     if (_ownsController) {
       _controller.dispose();
     }
@@ -257,8 +254,6 @@ class _AssistantPageState extends State<AssistantPage>
                   children: [
                     _buildHeader(context),
                     const SizedBox(height: 16),
-                    _buildWakeWordSetting(context),
-                    const SizedBox(height: 12),
                     AssistantVoicePanel(
                       state: _controller.state,
                       transcript: _controller.userTranscript,
@@ -479,76 +474,6 @@ class _AssistantPageState extends State<AssistantPage>
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildWakeWordSetting(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final enabled = _controller.wakeWordEnabled;
-    return Semantics(
-      container: true,
-      label: l10n.wakeWordMode,
-      value: enabled ? l10n.active : l10n.inactive,
-      toggled: enabled,
-      enabled: false,
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(14, 10, 8, 10),
-        decoration: BoxDecoration(
-          color: enabled
-              ? AppColors.statusGreen.withValues(alpha: 0.08)
-              : AppColors.surface,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: enabled
-                ? AppColors.statusGreen.withValues(alpha: 0.45)
-                : AppColors.cardBorder,
-          ),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              enabled ? Icons.hearing_rounded : Icons.hearing_disabled_rounded,
-              color: enabled ? AppColors.statusGreen : AppColors.textSecondary,
-              size: 22,
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    l10n.listenWakeWord,
-                    style: const TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    l10n.assistantVoiceWakeWordUnavailable,
-                    style: TextStyle(
-                      color: enabled
-                          ? AppColors.textPrimary
-                          : AppColors.textSecondary,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            ExcludeSemantics(
-              child: Switch(
-                key: const Key('wake-word-switch'),
-                value: enabled,
-                onChanged: null,
-                activeThumbColor: AppColors.statusGreen,
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

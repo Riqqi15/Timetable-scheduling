@@ -4,15 +4,13 @@ import 'package:timetable/features/assistant/presentation/controllers/assistant_
 import 'helpers/fake_assistant_speech.dart';
 
 void main() {
-  test('starts ready and unsupported wake word never activates', () {
+  test('starts ready', () {
     final controller = AssistantController(
       recognizer: FakeAssistantSpeechRecognizer(),
       speechService: FakeAssistantPlayback(),
     );
     addTearDown(controller.dispose);
     expect(controller.state, AssistantInteractionState.ready);
-    controller.toggleWakeWord(true);
-    expect(controller.wakeWordEnabled, isFalse);
   });
 
   test('recoverable error contains a code rather than a fake answer', () {

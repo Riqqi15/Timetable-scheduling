@@ -33,7 +33,6 @@ class AssistantController extends ChangeNotifier {
   String languageCode = 'id';
 
   AssistantInteractionState state = AssistantInteractionState.ready;
-  bool wakeWordEnabled = false;
   int completedExchangeId = 0;
   String? userTranscript;
   String? assistantResponse;
@@ -49,11 +48,6 @@ class AssistantController extends ChangeNotifier {
   void configure(AssistantCopy copy) => _copy = copy;
 
   AssistantCopy get copy => _copy;
-
-  void toggleWakeWord(bool value) {
-    // Always-on wake word is not provided by device short-phrase recognition.
-    wakeWordEnabled = false;
-  }
 
   Future<void> startConversation() async {
     if (_disposed ||
