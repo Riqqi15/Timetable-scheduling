@@ -199,7 +199,8 @@ class ScheduleCard extends StatelessWidget {
                     child: _TimeBlock(
                       label: l10n.departFromStation(schedule.stationName),
                       value: schedule.departureTime,
-                      icon: Icons.play_arrow_rounded,
+                      icon: Icons.train_rounded,
+                      directionIcon: Icons.north_east_rounded,
                       color: trainColor,
                     ),
                   ),
@@ -208,8 +209,9 @@ class ScheduleCard extends StatelessWidget {
                     child: _TimeBlock(
                       label: l10n.estimatedArrival,
                       value: schedule.arrivalTime,
-                      icon: Icons.stop_rounded,
-                      color: AppColors.textSecondary,
+                      icon: Icons.train_rounded,
+                      directionIcon: Icons.south_west_rounded,
+                      color: AppColors.primaryPurple,
                     ),
                   ),
                 ],
@@ -227,12 +229,14 @@ class _TimeBlock extends StatelessWidget {
     required this.label,
     required this.value,
     required this.icon,
+    required this.directionIcon,
     required this.color,
   });
 
   final String label;
   final String value;
   final IconData icon;
+  final IconData directionIcon;
   final Color color;
 
   @override
@@ -249,7 +253,9 @@ class _TimeBlock extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(icon, size: 12, color: color),
+              Icon(icon, size: 14, color: color),
+              const SizedBox(width: 2),
+              Icon(directionIcon, size: 10, color: color),
               const SizedBox(width: 4),
               Expanded(
                 child: Text(
