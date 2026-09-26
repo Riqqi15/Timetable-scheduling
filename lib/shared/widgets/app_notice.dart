@@ -9,6 +9,8 @@ enum AppNoticeType { success, info, warning, error }
 enum AppNoticePlacement { top, bottom }
 
 abstract final class AppNotice {
+  static OverlayEntry? _activeEntry;
+
   static void show(
     BuildContext context, {
     required String message,
@@ -19,44 +21,43 @@ abstract final class AppNotice {
     final trimmedMessage = message.trim();
     if (trimmedMessage.isEmpty) return;
 
-    final messenger = ScaffoldMessenger.of(context);
-    messenger
-      ..removeCurrentMaterialBanner()
-      ..removeCurrentSnackBar();
-
+    final overlay = Overlay.maybeOf(context, rootOverlay: true);
+    if (overlay == null) return;
     final resolvedDuration = duration ?? _durationFor(type);
-    if (placement == AppNoticePlacement.top) {
-      messenger.showMaterialBanner(
-        MaterialBanner(
-          backgroundColor: Colors.transparent,
-          surfaceTintColor: Colors.transparent,
-          elevation: 0,
-          dividerColor: Colors.transparent,
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-          content: _AutoDismissNoticeCard(
-            message: trimmedMessage,
-            type: type,
-            duration: resolvedDuration,
-            onDismiss: messenger.hideCurrentMaterialBanner,
-          ),
-          actions: const [SizedBox.shrink()],
-        ),
-      );
-      return;
-    }
+    _removeActiveEntry();
 
-    final bottomInset = MediaQuery.maybeViewPaddingOf(context)?.bottom ?? 0;
-    messenger.showSnackBar(
-      SnackBar(
-        content: _AppNoticeCard(message: trimmedMessage, type: type),
+    late final OverlayEntry entry;
+    entry = OverlayEntry(
+      builder: (overlayContext) => _AppNoticeOverlay(
+        message: trimmedMessage,
+        type: type,
+        placement: placement,
         duration: resolvedDuration,
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        padding: EdgeInsets.zero,
-        margin: EdgeInsets.fromLTRB(16, 8, 16, bottomInset + 12),
+        onDismiss: () => _removeEntry(entry),
+        onDisposed: () => _forgetEntry(entry),
       ),
     );
+    _activeEntry = entry;
+    overlay.insert(entry);
+  }
+
+  static void _removeActiveEntry() {
+    final entry = _activeEntry;
+    if (entry == null) return;
+    _activeEntry = null;
+    if (entry.mounted) entry.remove();
+    entry.dispose();
+  }
+
+  static void _removeEntry(OverlayEntry entry) {
+    if (!identical(_activeEntry, entry)) return;
+    _activeEntry = null;
+    if (entry.mounted) entry.remove();
+    entry.dispose();
+  }
+
+  static void _forgetEntry(OverlayEntry entry) {
+    if (identical(_activeEntry, entry)) _activeEntry = null;
   }
 
   static Duration _durationFor(AppNoticeType type) => switch (type) {
@@ -67,42 +68,112 @@ abstract final class AppNotice {
   };
 }
 
-class _AutoDismissNoticeCard extends StatefulWidget {
-  const _AutoDismissNoticeCard({
+class _AppNoticeOverlay extends StatefulWidget {
+  const _AppNoticeOverlay({
     required this.message,
     required this.type,
+    required this.placement,
     required this.duration,
     required this.onDismiss,
+    required this.onDisposed,
   });
 
   final String message;
   final AppNoticeType type;
+  final AppNoticePlacement placement;
   final Duration duration;
   final VoidCallback onDismiss;
+  final VoidCallback onDisposed;
 
   @override
-  State<_AutoDismissNoticeCard> createState() =>
-      _AutoDismissNoticeCardState();
+  State<_AppNoticeOverlay> createState() => _AppNoticeOverlayState();
 }
 
-class _AutoDismissNoticeCardState extends State<_AutoDismissNoticeCard> {
-  late final Timer _timer;
+class _AppNoticeOverlayState extends State<_AppNoticeOverlay>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _opacity;
+  late final Animation<Offset> _offset;
+  Timer? _timer;
+  bool _dismissing = false;
 
   @override
   void initState() {
     super.initState();
-    _timer = Timer(widget.duration, widget.onDismiss);
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 220),
+      reverseDuration: const Duration(milliseconds: 160),
+      vsync: this,
+    );
+    final animation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOutCubic,
+      reverseCurve: Curves.easeInCubic,
+    );
+    _opacity = animation;
+    _offset = Tween<Offset>(
+      begin: widget.placement == AppNoticePlacement.top
+          ? const Offset(0, -0.25)
+          : const Offset(0, 0.25),
+      end: Offset.zero,
+    ).animate(animation);
+    _controller.forward();
+    _timer = Timer(widget.duration, () => unawaited(_dismiss()));
   }
 
   @override
   void dispose() {
-    _timer.cancel();
+    _timer?.cancel();
+    _controller.dispose();
+    widget.onDisposed();
     super.dispose();
+  }
+
+  Future<void> _dismiss() async {
+    if (_dismissing || !mounted) return;
+    _dismissing = true;
+    _timer?.cancel();
+    await _controller.reverse();
+    if (mounted) widget.onDismiss();
+  }
+
+  void _handleVerticalDragEnd(DragEndDetails details) {
+    final velocity = details.primaryVelocity ?? 0;
+    final towardEdge = widget.placement == AppNoticePlacement.top
+        ? velocity < -250
+        : velocity > 250;
+    if (towardEdge) unawaited(_dismiss());
   }
 
   @override
   Widget build(BuildContext context) {
-    return _AppNoticeCard(message: widget.message, type: widget.type);
+    final bottomInset = MediaQuery.paddingOf(context).bottom;
+    final textScale = MediaQuery.textScalerOf(context).scale(1);
+    final scaleProgress = (textScale - 1).clamp(0.0, 1.0).toDouble();
+    final navHeight = 72.0 + (28.0 * scaleProgress);
+
+    return Positioned(
+      left: 16,
+      right: 16,
+      top: widget.placement == AppNoticePlacement.top
+          ? MediaQuery.paddingOf(context).top + 12
+          : null,
+      bottom: widget.placement == AppNoticePlacement.bottom
+          ? bottomInset + navHeight + 12
+          : null,
+      child: FadeTransition(
+        opacity: _opacity,
+        child: SlideTransition(
+          position: _offset,
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => unawaited(_dismiss()),
+            onVerticalDragEnd: _handleVerticalDragEnd,
+            child: _AppNoticeCard(message: widget.message, type: widget.type),
+          ),
+        ),
+      ),
+    );
   }
 }
 

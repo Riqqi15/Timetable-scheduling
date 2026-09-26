@@ -16,7 +16,7 @@
 - Modify: `test/app_notice_test.dart`
 - Modify: `test/app_notice_usage_test.dart`
 
-- [ ] **Step 1: Replace framework-component expectations with overlay expectations**
+- [x] **Step 1: Replace framework-component expectations with overlay expectations**
 
 In `test/app_notice_test.dart`, record the harness body position before showing a notice, then assert the same position while the notice is visible:
 
@@ -36,7 +36,7 @@ expect(
 
 Give the harness body `Key('notice-harness-body')`. Add tests for bottom placement, tap dismissal, automatic dismissal, replacement, semantic live-region behavior, and long multilingual text at `textScale: 2`.
 
-- [ ] **Step 2: Forbid direct banners and snackbars in feature UI**
+- [x] **Step 2: Forbid direct banners and snackbars in feature UI**
 
 Change the static scan in `test/app_notice_usage_test.dart` to report either component:
 
@@ -49,7 +49,7 @@ for (final match in RegExp(
 }
 ```
 
-- [ ] **Step 3: Run the focused tests and verify they fail**
+- [x] **Step 3: Run the focused tests and verify they fail**
 
 Run:
 
@@ -65,7 +65,7 @@ Expected: FAIL because the current top notice is a `MaterialBanner`, the bottom 
 - Modify: `lib/shared/widgets/app_notice.dart`
 - Test: `test/app_notice_test.dart`
 
-- [ ] **Step 1: Replace `MaterialBanner` and `SnackBar` creation**
+- [x] **Step 1: Replace `MaterialBanner` and `SnackBar` creation**
 
 Resolve the root overlay and replace the active entry before inserting the next one:
 
@@ -90,7 +90,7 @@ overlay.insert(entry);
 
 Keep `_durationFor` unchanged. `_removeEntry` must check identity and mounted state before removing and disposing the entry.
 
-- [ ] **Step 2: Implement animated safe-area positioning**
+- [x] **Step 2: Implement animated safe-area positioning**
 
 Create `_AppNoticeOverlay` as a `StatefulWidget` with `SingleTickerProviderStateMixin`. Use a 220 ms entrance and 160 ms exit, `FadeTransition`, and `SlideTransition`. Position top notices at `MediaQuery.paddingOf(context).top + 12`. Mirror the app navbar calculation for bottom notices: `72 + 28 * (textScale - 1).clamp(0, 1)`, then add the device bottom safe area and 12 pixels. This keeps the overlay above the custom navbar even with large system text.
 
@@ -121,7 +121,7 @@ return Positioned(
 
 Start the dismissal timer after the entrance begins. Cancel it in `dispose`. For a top notice, an upward fling dismisses; for a bottom notice, a downward fling dismisses.
 
-- [ ] **Step 3: Run focused tests and verify they pass**
+- [x] **Step 3: Run focused tests and verify they pass**
 
 Run:
 

@@ -13,7 +13,9 @@ void main() {
 
     for (final file in files) {
       final source = file.readAsStringSync();
-      for (final match in RegExp(r'\bSnackBar\s*\(').allMatches(source)) {
+      for (final match in RegExp(
+        r'\b(?:SnackBar|MaterialBanner)\s*\(',
+      ).allMatches(source)) {
         final line =
             '\n'.allMatches(source.substring(0, match.start)).length + 1;
         violations.add('${file.path}:$line');
@@ -24,7 +26,7 @@ void main() {
       violations,
       isEmpty,
       reason:
-          'Feature UI must present transient feedback through AppNotice:\n'
+          'Feature UI must present transient feedback through AppNotice overlays:\n'
           '${violations.join('\n')}',
     );
   });
