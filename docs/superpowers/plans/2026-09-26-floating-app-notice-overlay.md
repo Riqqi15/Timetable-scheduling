@@ -178,7 +178,7 @@ flutter test test/app_notice_test.dart test/widget_test.dart test/account_pages_
 
 Expected: PASS.
 
-- [ ] **Step 4: Commit contextual placement**
+- [x] **Step 4: Commit contextual placement**
 
 ```powershell
 git add lib/main.dart lib/features/profile/presentation/pages/active_ticket_detail_page.dart lib/features/profile/presentation/pages/completed_ticket_detail_page.dart lib/features/profile/presentation/pages/ticket_history_page.dart
@@ -190,7 +190,7 @@ git commit -m "fix: place app notices by interaction context"
 **Files:**
 - Modify: `docs/superpowers/plans/2026-09-26-floating-app-notice-overlay.md`
 
-- [ ] **Step 1: Run mechanical UI detection**
+- [x] **Step 1: Run mechanical UI detection**
 
 Run:
 
@@ -200,7 +200,7 @@ node C:\Users\riyadh\.agents\skills\impeccable\scripts\detect.mjs --json lib/sha
 
 Review findings for contrast, overflow, arbitrary spacing, safe-area positioning, and touch targets. Fix only findings relevant to the notice overlay.
 
-- [ ] **Step 2: Run final verification**
+- [x] **Step 2: Run final verification**
 
 Run:
 
@@ -212,11 +212,11 @@ git diff --check
 
 Expected: analysis reports no issues, every test passes, and `git diff --check` prints no errors.
 
-- [ ] **Step 3: Launch the app with the local backend**
+- [x] **Step 3: Launch the app with the local backend**
 
 Verify `GET http://127.0.0.1:3000/health`, apply `adb reverse tcp:3000 tcp:3000`, launch Flutter on the active emulator, and trigger the language-change notice. The page header must remain in its original position while the notice floats above it.
 
-- [ ] **Step 4: Commit the completed checklist**
+- [x] **Step 4: Commit the completed checklist**
 
 ```powershell
 git add -f docs/superpowers/plans/2026-09-26-floating-app-notice-overlay.md

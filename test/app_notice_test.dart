@@ -1,5 +1,3 @@
-import 'dart:ui' show SemanticsFlag;
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:timetable/core/theme/app_theme.dart';
@@ -79,7 +77,7 @@ void main() {
     final data = tester
         .getSemantics(find.bySemanticsLabel('Perubahan berhasil disimpan.'))
         .getSemanticsData();
-    expect(data.hasFlag(SemanticsFlag.isLiveRegion), isTrue);
+    expect(data.flagsCollection.isLiveRegion, isTrue);
     semantics.dispose();
   });
 
